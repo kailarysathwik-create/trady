@@ -1,0 +1,46 @@
+# ==============================================================================
+# TRADY Base Configuration
+# Educational Quantitative Research and Paper-Trading Platform
+# ==============================================================================
+
+# Core System Settings
+system:
+  app_name: "TRADY"
+  version: "0.1.0"
+  environment: "development"
+  random_seed: 42
+
+# Structured Logging
+logging:
+  level: "INFO"
+  format: "text" # "text" or "json"
+  show_timestamp: true
+  show_caller: false
+
+# Storage and Data Paths (Relative to project root or absolute)
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  notebooks: "notebooks"
+  reports: "reports"
+  configs: "configs"
+
+# Target Compute & Hardware Constraints
+# Tailored for Lenovo LOQ (Intel i5-12450HX, NVIDIA RTX 3050, 16GB RAM)
+hardware:
+  device: "cpu"            # Set to "cuda" if torch is installed and GPU available
+  max_workers: 4           # Conservative worker pool for 12-thread CPU
+  batch_size: 64           # Conservative batch size for 4-6GB VRAM
+  memory_limit_mb: 12288   # Soft limit: leave 4GB headroom on 16GB RAM machine
+  cuda_deterministic: true # Ensure deterministic CUDA operations if GPU is used
+
+# Safety & Compliance Firewall
+# IMPORTANT: TRADY does NOT support real-money trading or autonomous execution.
+# live_trading_enabled must remain false. Attempting to enable it will trigger a fatal halt.
+safety:
+  live_trading_enabled: false
+  paper_trading_only: true
+  disclaimer_acknowledged: true
+  max_position_size_pct: 0.10  # Max 10% of portfolio in any single simulated position
+  max_drawdown_limit_pct: 0.20 # Maximum tolerated simulated drawdown threshold
