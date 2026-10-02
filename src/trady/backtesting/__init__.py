@@ -1,4 +1,4 @@
-"""Backtesting and paper-trading simulation interface contracts for TRADY.
+"""Historical backtesting and quantitative simulation engine for TRADY.
 
 SAFETY INVARIANT:
     All simulations are strictly virtual and educational. No real-money execution
@@ -7,7 +7,26 @@ SAFETY INVARIANT:
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Any, Literal
+
+from trady.backtesting.config import BacktestConfig
+from trady.backtesting.engine import BacktestEngine, BacktestResult
+from trady.backtesting.execution import ExecutionResult, ExecutionSimulator
+from trady.backtesting.metrics import BacktestMetrics, calculate_metrics
+from trady.backtesting.portfolio import (
+    EquityPoint,
+    PortfolioTracker,
+    Position,
+    TradeRecord,
+)
+from trady.backtesting.reporting import generate_html_report, save_backtest_artifacts
+from trady.backtesting.strategy import BaseStrategy, ModelDrivenStrategy, Order
+from trady.backtesting.walk_forward import (
+    WalkForwardConfig,
+    WalkForwardEvaluator,
+    WalkForwardFoldResult,
+    WalkForwardResult,
+)
 
 
 @dataclass(frozen=True)
@@ -44,13 +63,27 @@ class BacktestSummary:
     metadata: dict[str, Any]
 
 
-@runtime_checkable
-class BacktestEngine(Protocol):
-    """Protocol defining the execution contract for simulation runners."""
-
-    def run_simulation(self, dataset: Any, signal_generator: Any) -> BacktestSummary:
-        """Execute a causal historical simulation."""
-        ...
-
-
-__all__ = ["BacktestEngine", "BacktestSummary", "SimulatedOrder"]
+__all__ = [
+    "BacktestConfig",
+    "BacktestEngine",
+    "BacktestMetrics",
+    "BacktestResult",
+    "BacktestSummary",
+    "BaseStrategy",
+    "EquityPoint",
+    "ExecutionResult",
+    "ExecutionSimulator",
+    "ModelDrivenStrategy",
+    "Order",
+    "PortfolioTracker",
+    "Position",
+    "SimulatedOrder",
+    "TradeRecord",
+    "WalkForwardConfig",
+    "WalkForwardEvaluator",
+    "WalkForwardFoldResult",
+    "WalkForwardResult",
+    "calculate_metrics",
+    "generate_html_report",
+    "save_backtest_artifacts",
+]

@@ -89,8 +89,7 @@ data/targets/*
 models/*
 !models/.gitkeep
 *.h5
-reports/*.pdf
-reports/*.html
+reports/*
 !reports/.gitkeep
 !notebooks/.gitkeep
 !scripts/.gitkeep

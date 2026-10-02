@@ -22,6 +22,9 @@ def test_cli_parser_commands() -> None:
     args_system = parser.parse_args(["system"])
     assert args_system.command == "system"
 
+    args_bt = parser.parse_args(["backtest", "inspect", "dummy"])
+    assert args_bt.command == "backtest"
+
 
 def test_cli_version_flag() -> None:
     """Ensure --version flag is parsed."""
@@ -318,3 +321,51 @@ def test_cli_models_workflow(
     # 5. trady models evaluate
     args_eval = parser.parse_args(["models", "evaluate", model_path, labeled_parquet])
     assert handle_model_command(args_eval) == 0
+
+    # 6. trady backtest run
+    from trady.backtesting.cli import handle_backtest_command
+
+    bt_dir = str(tmp_path / "bt_run")
+    args_bt_run = parser.parse_args(
+        [
+            "backtest",
+            "run",
+            labeled_parquet,
+            "--model",
+            model_path,
+            "-o",
+            bt_dir,
+            "--entry-threshold",
+            "0.5",
+        ]
+    )
+    assert handle_backtest_command(args_bt_run) == 0
+    assert (Path(bt_dir) / "metrics.json").is_file()
+    assert (Path(bt_dir) / "equity_curve.parquet").is_file()
+    assert (Path(bt_dir) / "trades.parquet").is_file()
+    assert (Path(bt_dir) / "configuration.json").is_file()
+    assert (Path(bt_dir) / "report.html").is_file()
+
+    # 7. trady backtest inspect
+    args_bt_insp = parser.parse_args(["backtest", "inspect", bt_dir])
+    assert handle_backtest_command(args_bt_insp) == 0
+
+    # 8. trady backtest walk-forward
+    wf_dir = str(tmp_path / "wf_run")
+    args_bt_wf = parser.parse_args(
+        [
+            "backtest",
+            "walk-forward",
+            labeled_parquet,
+            "--target",
+            "target_binary_up_1d",
+            "--model-type",
+            "baseline",
+            "--folds",
+            "2",
+            "-o",
+            wf_dir,
+        ]
+    )
+    assert handle_backtest_command(args_bt_wf) == 0
+    assert (Path(wf_dir) / "walk_forward_summary.csv").is_file()
