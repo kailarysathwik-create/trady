@@ -80,6 +80,10 @@ data/interim/*
 !data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/features/*
+!data/features/.gitkeep
+data/targets/*
+!data/targets/.gitkeep
 
 # Model weights, serialized artifacts, large experiment outputs
 models/*.pt

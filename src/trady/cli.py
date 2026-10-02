@@ -67,10 +67,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect target compute environment and hardware specifications",
     )
 
-    # Market data engine command tree
+    # Subsystems
     from trady.data.cli import add_data_subparsers
+    from trady.features.cli import add_feature_subparsers
+    from trady.targets.cli import add_target_subparsers
 
     add_data_subparsers(subparsers)
+    add_feature_subparsers(subparsers)
+    add_target_subparsers(subparsers)
 
     return parser
 
@@ -127,6 +131,8 @@ def run_health_check(config_path: str | None = None, strict: bool = False) -> in
         "data/raw",
         "data/interim",
         "data/processed",
+        "data/features",
+        "data/targets",
         "notebooks",
         "reports",
         "scripts",
@@ -279,6 +285,16 @@ def main(argv: list[str] | None = None) -> NoReturn:
         from trady.data.cli import handle_data_command
 
         exit_code = handle_data_command(args)
+        sys.exit(exit_code)
+    elif args.command == "features":
+        from trady.features.cli import handle_feature_command
+
+        exit_code = handle_feature_command(args)
+        sys.exit(exit_code)
+    elif args.command == "targets":
+        from trady.targets.cli import handle_target_command
+
+        exit_code = handle_target_command(args)
         sys.exit(exit_code)
     else:
         parser.print_help()

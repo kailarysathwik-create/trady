@@ -116,3 +116,114 @@ def test_cli_data_workflow(
     )
     exit_query = handle_data_command(args_query)
     assert exit_query == 0
+
+
+def test_cli_features_workflow(
+    tmp_path: pytest.TempPathFactory, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Test full CLI features workflow from list to compute and inspect."""
+    from trady.data.cli import handle_data_command
+    from trady.features.cli import handle_feature_command
+
+    parser = build_parser()
+
+    # 1. trady features list
+    args_list = parser.parse_args(["features", "list"])
+    exit_list = handle_feature_command(args_list)
+    assert exit_list == 0
+
+    # 2. Generate small dataset
+    raw_json = str(tmp_path / "raw.json")
+    args_gen = parser.parse_args(
+        [
+            "data",
+            "generate-synthetic",
+            "--symbol",
+            "SPY",
+            "--bars",
+            "25",
+            "-o",
+            raw_json,
+        ]
+    )
+    assert handle_data_command(args_gen) == 0
+
+    proc_parquet = str(tmp_path / "proc.parquet")
+    args_norm = parser.parse_args(["data", "normalize", raw_json, "-o", proc_parquet])
+    assert handle_data_command(args_norm) == 0
+
+    # 3. trady features compute
+    feat_parquet = str(tmp_path / "features.parquet")
+    args_comp = parser.parse_args(
+        [
+            "features",
+            "compute",
+            proc_parquet,
+            "-o",
+            feat_parquet,
+            "--groups",
+            "PRICE",
+            "MOMENTUM",
+        ]
+    )
+    exit_comp = handle_feature_command(args_comp)
+    assert exit_comp == 0
+
+    # 4. trady features inspect
+    args_insp = parser.parse_args(["features", "inspect", feat_parquet])
+    exit_insp = handle_feature_command(args_insp)
+    assert exit_insp == 0
+
+
+def test_cli_targets_workflow(
+    tmp_path: pytest.TempPathFactory, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Test full CLI targets workflow from list to compute and inspect."""
+    from trady.data.cli import handle_data_command
+    from trady.targets.cli import handle_target_command
+
+    parser = build_parser()
+
+    # 1. trady targets list
+    args_list = parser.parse_args(["targets", "list"])
+    assert handle_target_command(args_list) == 0
+
+    # 2. Generate market data
+    raw_json = str(tmp_path / "raw.json")
+    args_gen = parser.parse_args(
+        [
+            "data",
+            "generate-synthetic",
+            "--symbol",
+            "SPY",
+            "--bars",
+            "30",
+            "-o",
+            raw_json,
+        ]
+    )
+    assert handle_data_command(args_gen) == 0
+
+    proc_parquet = str(tmp_path / "proc.parquet")
+    args_norm = parser.parse_args(["data", "normalize", raw_json, "-o", proc_parquet])
+    assert handle_data_command(args_norm) == 0
+
+    # 3. trady targets compute
+    labeled_parquet = str(tmp_path / "labeled.parquet")
+    args_comp = parser.parse_args(
+        [
+            "targets",
+            "compute",
+            proc_parquet,
+            "-o",
+            labeled_parquet,
+            "--targets",
+            "target_fwd_ret_5d",
+            "target_binary_up_5d",
+        ]
+    )
+    assert handle_target_command(args_comp) == 0
+
+    # 4. trady targets inspect
+    args_insp = parser.parse_args(["targets", "inspect", labeled_parquet])
+    assert handle_target_command(args_insp) == 0
