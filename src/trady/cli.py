@@ -67,6 +67,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect target compute environment and hardware specifications",
     )
 
+    # Market data engine command tree
+    from trady.data.cli import add_data_subparsers
+
+    add_data_subparsers(subparsers)
+
     return parser
 
 
@@ -270,6 +275,11 @@ def main(argv: list[str] | None = None) -> NoReturn:
     elif args.command == "system":
         cmd_system()
         sys.exit(0)
+    elif args.command == "data":
+        from trady.data.cli import handle_data_command
+
+        exit_code = handle_data_command(args)
+        sys.exit(exit_code)
     else:
         parser.print_help()
         sys.exit(1)

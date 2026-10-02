@@ -1,12 +1,37 @@
-"""Data ingestion and storage interface contracts for TRADY.
+"""Data layer for TRADY: ingestion, validation, normalization, and Parquet/DuckDB.
 
-NOTE: Concrete market data providers are intentionally deferred in this foundation.
-This module defines the architectural contracts and protocols for future data pipelines.
+Establishes the foundational data engine for quantitative research without
+live execution.
 """
 
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
+
+from trady.data.metadata import DatasetMetadata
+from trady.data.normalizer import (
+    NormalizationConfig,
+    arrow_table_to_records,
+    normalize_records,
+    records_to_arrow_table,
+)
+from trady.data.provider import MarketDataProvider, SyntheticDataProvider
+from trady.data.schema import CANONICAL_COLUMNS, OHLCVRecord, get_canonical_arrow_schema
+from trady.data.storage import (
+    calculate_file_sha256,
+    inspect_dataset,
+    load_dataset,
+    load_records,
+    query_dataset,
+    save_dataset,
+)
+from trady.data.validator import (
+    ValidationError,
+    ValidationResult,
+    ValidationWarning,
+    validate_arrow_table,
+    validate_records,
+)
 
 
 @dataclass(frozen=True)
@@ -47,4 +72,28 @@ class MarketDataSource(Protocol):
         ...
 
 
-__all__ = ["MarketDataBatch", "MarketDataSource"]
+__all__ = [
+    "CANONICAL_COLUMNS",
+    "DatasetMetadata",
+    "MarketDataBatch",
+    "MarketDataProvider",
+    "MarketDataSource",
+    "NormalizationConfig",
+    "OHLCVRecord",
+    "SyntheticDataProvider",
+    "ValidationError",
+    "ValidationResult",
+    "ValidationWarning",
+    "arrow_table_to_records",
+    "calculate_file_sha256",
+    "get_canonical_arrow_schema",
+    "inspect_dataset",
+    "load_dataset",
+    "load_records",
+    "normalize_records",
+    "query_dataset",
+    "records_to_arrow_table",
+    "save_dataset",
+    "validate_arrow_table",
+    "validate_records",
+]
