@@ -353,6 +353,10 @@ def test_artifact_generation(tmp_path: Path) -> None:
         html = f.read()
     assert "TRADY &bull; Quantitative Research Backtest Report" in html
 
+    # 6. risk_decisions.parquet
+    assert "risk_decisions.parquet" in artifacts
+    assert artifacts["risk_decisions.parquet"].is_file()
+
 
 def test_model_driven_strategy_stop_loss() -> None:
     """Verify stop-loss execution when price drops below stop_loss_pct."""

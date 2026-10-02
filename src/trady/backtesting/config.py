@@ -23,6 +23,7 @@ class BacktestConfig:
     risk_free_rate: float = 0.02  # 2.0% annual benchmark for Sharpe / Sortino
     periods_per_year: int = 252  # Trading days per year
     random_seed: int = 42
+    risk_config: Any | None = None
 
     def __post_init__(self) -> None:
         if self.initial_cash <= 0:

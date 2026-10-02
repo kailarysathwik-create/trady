@@ -110,6 +110,69 @@ def generate_html_report(
         </table>
         """
 
+    risk_section = ""
+    if result.risk_decisions:
+        n_accepted = sum(1 for d in result.risk_decisions if d.is_accepted)
+        n_reduced = sum(1 for d in result.risk_decisions if d.is_reduced)
+        n_rejected = sum(1 for d in result.risk_decisions if d.is_rejected)
+        risk_rows = ""
+        for d in result.risk_decisions[:50]:
+            if d.is_accepted:
+                status_cls = "profit"
+            elif d.is_rejected:
+                status_cls = "loss"
+            else:
+                status_cls = "neutral"
+            risk_rows += f"""
+            <tr>
+                <td>{d.decision_id}</td>
+                <td>{d.timestamp}</td>
+                <td>{d.symbol}</td>
+                <td>{d.action}</td>
+                <td class="{status_cls}">{d.status}</td>
+                <td>{d.requested_quantity:.4f}</td>
+                <td>{d.approved_quantity:.4f}</td>
+                <td>${d.requested_value:,.2f}</td>
+                <td>${d.approved_value:,.2f}</td>
+                <td><span class="badge">{d.constraint_triggered or "none"}</span></td>
+                <td>{d.reason}</td>
+            </tr>
+            """
+        risk_section = f"""
+        <h2>Risk Engine Audit Decisions</h2>
+        <table>
+            <tr><th>Metric</th><th>Count</th><th>Metric</th><th>Count</th></tr>
+            <tr>
+                <td>Proposed Orders Evaluated</td><td>{len(result.risk_decisions)}</td>
+                <td>Accepted Without Adjustment</td><td>{n_accepted}</td>
+            </tr>
+            <tr>
+                <td>Reduced By Constraints</td><td>{n_reduced}</td>
+                <td>Rejected By Circuit Breakers</td><td>{n_rejected}</td>
+            </tr>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Decision ID</th>
+                    <th>Timestamp</th>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Status</th>
+                    <th>Req Qty</th>
+                    <th>Appr Qty</th>
+                    <th>Req Val</th>
+                    <th>Appr Val</th>
+                    <th>Constraint</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {risk_rows}
+            </tbody>
+        </table>
+        """
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -338,6 +401,8 @@ def generate_html_report(
         <h2>Trade Execution Log (Roundtrips)</h2>
         {trades_section}
 
+        {risk_section}
+
         <div class="disclaimer">
             <strong>TRADY Educational Research Notice:</strong>
             This backtest simulation is strictly for quantitative hypothesis
@@ -358,7 +423,7 @@ def save_backtest_artifacts(
     output_dir: Path | str,
     extra_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Path]:
-    """Save all 5 required backtest experiment artifacts to disk.
+    """Save all required backtest experiment artifacts to disk.
 
     Artifacts:
     1. metrics.json
@@ -366,6 +431,7 @@ def save_backtest_artifacts(
     3. trades.parquet
     4. configuration.json
     5. report.html
+    6. risk_decisions.parquet (when risk decisions exist)
 
     Args:
         result: BacktestResult instance.
@@ -415,5 +481,11 @@ def save_backtest_artifacts(
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(html_content)
     artifacts["report.html"] = report_path
+
+    # 6. risk_decisions.parquet
+    risk_df = result.to_risk_decisions_dataframe()
+    risk_path = out_path / "risk_decisions.parquet"
+    risk_df.to_parquet(risk_path, index=False)
+    artifacts["risk_decisions.parquet"] = risk_path
 
     return artifacts

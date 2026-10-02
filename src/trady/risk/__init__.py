@@ -1,12 +1,22 @@
-"""Risk management and portfolio constraints for simulated trading in TRADY."""
+"""TRADY Risk Engine for simulated portfolio constraints and position sizing.
+
+SAFETY INVARIANT:
+    All risk evaluation is strictly virtual and educational. No real-money execution
+    is implemented or permitted.
+"""
 
 from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
 
+from trady.risk.config import RiskConfig
+from trady.risk.decision import RiskDecision
+from trady.risk.engine import RiskEngine
+from trady.risk.sizing import PositionSizer
+
 
 @dataclass(frozen=True)
 class RiskCheckResult:
-    """Result of a simulated risk validation."""
+    """Result of a simulated risk validation (legacy contract)."""
 
     allowed: bool
     reason: str
@@ -26,4 +36,11 @@ class RiskController(Protocol):
         ...
 
 
-__all__ = ["RiskCheckResult", "RiskController"]
+__all__ = [
+    "PositionSizer",
+    "RiskCheckResult",
+    "RiskConfig",
+    "RiskController",
+    "RiskDecision",
+    "RiskEngine",
+]

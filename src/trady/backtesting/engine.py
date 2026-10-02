@@ -1,7 +1,7 @@
 """Chronological backtesting engine preventing look-ahead bias."""
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 
@@ -10,6 +10,9 @@ from trady.backtesting.execution import ExecutionResult, ExecutionSimulator
 from trady.backtesting.metrics import BacktestMetrics, calculate_metrics
 from trady.backtesting.portfolio import EquityPoint, PortfolioTracker, TradeRecord
 from trady.backtesting.strategy import BaseStrategy, Order
+from trady.risk.config import RiskConfig
+from trady.risk.decision import RiskDecision
+from trady.risk.engine import RiskEngine
 
 
 @dataclass
@@ -21,6 +24,7 @@ class BacktestResult:
     equity_curve: list[EquityPoint]
     trades: list[TradeRecord]
     executions: list[ExecutionResult]
+    risk_decisions: list[RiskDecision] = field(default_factory=list)
 
     def to_equity_dataframe(self) -> pd.DataFrame:
         """Convert equity curve history to pandas DataFrame."""
@@ -62,13 +66,58 @@ class BacktestResult:
             )
         return pd.DataFrame([t.to_dict() for t in self.trades])
 
+    def to_risk_decisions_dataframe(self) -> pd.DataFrame:
+        """Convert risk engine audit trail decisions to pandas DataFrame."""
+        if not self.risk_decisions:
+            return pd.DataFrame(
+                columns=[
+                    "decision_id",
+                    "timestamp",
+                    "symbol",
+                    "action",
+                    "status",
+                    "requested_quantity",
+                    "approved_quantity",
+                    "requested_value",
+                    "approved_value",
+                    "price",
+                    "reason",
+                    "constraint_triggered",
+                    "current_equity",
+                    "current_drawdown",
+                    "portfolio_exposure_pct",
+                    "position_concentration_pct",
+                ]
+            )
+        return pd.DataFrame([d.to_dict() for d in self.risk_decisions])
+
 
 class BacktestEngine:
     """Orchestrates chronological execution and portfolio simulation."""
 
-    def __init__(self, config: BacktestConfig | None = None) -> None:
+    def __init__(
+        self,
+        config: BacktestConfig | None = None,
+        risk_engine: RiskEngine | None = None,
+    ) -> None:
         self.config = config or BacktestConfig()
         self.simulator = ExecutionSimulator(self.config)
+        if risk_engine is not None:
+            self.risk_engine = risk_engine
+        elif self.config.risk_config is not None:
+            if isinstance(self.config.risk_config, RiskConfig):
+                self.risk_engine = RiskEngine(self.config.risk_config)
+            elif isinstance(self.config.risk_config, dict):
+                self.risk_engine = RiskEngine(RiskConfig(**self.config.risk_config))
+            else:
+                self.risk_engine = RiskEngine()
+        else:
+            self.risk_engine = RiskEngine(
+                RiskConfig(
+                    max_portfolio_exposure=self.config.max_gross_leverage,
+                    allow_shorting=self.config.allow_shorting,
+                )
+            )
 
     def run(
         self,
@@ -110,6 +159,7 @@ class BacktestEngine:
         tracker = PortfolioTracker(initial_cash=self.config.initial_cash)
         executions: list[ExecutionResult] = []
         pending_orders: list[Order] = []
+        risk_decisions: list[RiskDecision] = []
 
         # Convert predictions to sequence for indexing
         pred_list: list[float | None]
@@ -232,7 +282,23 @@ class BacktestEngine:
                     current_equity=tracker.current_equity,
                 )
                 if order is not None:
-                    pending_orders.append(order)
+                    cur_dd = (
+                        abs(tracker.equity_curve[-1].drawdown)
+                        if tracker.equity_curve
+                        else 0.0
+                    )
+                    approved_order, decision = self.risk_engine.evaluate_order(
+                        order=order,
+                        timestamp=b_ts,
+                        current_price=b_close,
+                        current_equity=tracker.current_equity,
+                        current_cash=tracker.cash,
+                        current_drawdown=cur_dd,
+                        existing_positions=tracker.positions,
+                    )
+                    risk_decisions.append(decision)
+                    if approved_order is not None and approved_order.quantity > 0:
+                        pending_orders.append(approved_order)
 
         # Close out any remaining position on final bar if requested
         if close_positions_at_end:
@@ -278,4 +344,5 @@ class BacktestEngine:
             equity_curve=tracker.equity_curve,
             trades=tracker.trades,
             executions=executions,
+            risk_decisions=risk_decisions,
         )
