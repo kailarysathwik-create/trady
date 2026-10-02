@@ -102,11 +102,14 @@ class ModelingDataset:
         Returns:
             2D numpy float64 array of shape (N, num_features).
         """
-        cols = [
-            self.table.column(f).to_numpy(zero_copy_only=False)
-            for f in self.feature_names
-        ]
-        x_mat = np.column_stack(cols).astype(np.float64)
+        if not self.feature_names:
+            x_mat = np.empty((len(self.table), 0), dtype=np.float64)
+        else:
+            cols = [
+                self.table.column(f).to_numpy(zero_copy_only=False)
+                for f in self.feature_names
+            ]
+            x_mat = np.column_stack(cols).astype(np.float64)
 
         if drop_na:
             valid_mask = ~np.isnan(x_mat).any(axis=1)
@@ -170,11 +173,14 @@ class ModelingDataset:
             )
             raise KeyError(msg)
 
-        cols = [
-            self.table.column(f).to_numpy(zero_copy_only=False)
-            for f in self.feature_names
-        ]
-        x_mat = np.column_stack(cols).astype(np.float64)
+        if not self.feature_names:
+            x_mat = np.empty((len(self.table), 0), dtype=np.float64)
+        else:
+            cols = [
+                self.table.column(f).to_numpy(zero_copy_only=False)
+                for f in self.feature_names
+            ]
+            x_mat = np.column_stack(cols).astype(np.float64)
         y_vec = (
             self.table.column(target_name)
             .to_numpy(zero_copy_only=False)

@@ -1,5 +1,7 @@
 """Unit tests for TRADY CLI subcommands and options."""
 
+from pathlib import Path
+
 import pytest
 
 from trady.cli import build_parser, run_health_check
@@ -227,3 +229,92 @@ def test_cli_targets_workflow(
     # 4. trady targets inspect
     args_insp = parser.parse_args(["targets", "inspect", labeled_parquet])
     assert handle_target_command(args_insp) == 0
+
+
+def test_cli_models_workflow(
+    tmp_path: pytest.TempPathFactory, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Test full CLI models workflow: list-types, train, inspect, evaluate."""
+    from trady.data.cli import handle_data_command
+    from trady.models.cli import handle_model_command
+    from trady.targets.cli import handle_target_command
+
+    parser = build_parser()
+
+    # 1. trady models list-types
+    args_list = parser.parse_args(["models", "list-types"])
+    assert handle_model_command(args_list) == 0
+
+    # 2. Generate market data and compute targets
+    raw_json = str(tmp_path / "raw.json")
+    args_gen = parser.parse_args(
+        [
+            "data",
+            "generate-synthetic",
+            "--symbol",
+            "SPY",
+            "--bars",
+            "100",
+            "-o",
+            raw_json,
+        ]
+    )
+    assert handle_data_command(args_gen) == 0
+
+    proc_parquet = str(tmp_path / "proc.parquet")
+    args_norm = parser.parse_args(["data", "normalize", raw_json, "-o", proc_parquet])
+    assert handle_data_command(args_norm) == 0
+
+    from trady.features.cli import handle_feature_command
+
+    feat_parquet = str(tmp_path / "feat.parquet")
+    args_feat = parser.parse_args(
+        ["features", "compute", proc_parquet, "-o", feat_parquet]
+    )
+    assert handle_feature_command(args_feat) == 0
+
+    labeled_parquet = str(tmp_path / "labeled.parquet")
+    args_comp = parser.parse_args(
+        [
+            "targets",
+            "compute",
+            proc_parquet,
+            "--features",
+            feat_parquet,
+            "-o",
+            labeled_parquet,
+            "--targets",
+            "target_binary_up_1d",
+        ]
+    )
+    assert handle_target_command(args_comp) == 0
+
+    # 3. trady models train
+    models_dir = str(tmp_path / "models")
+    args_train = parser.parse_args(
+        [
+            "models",
+            "train",
+            labeled_parquet,
+            "--model",
+            "baseline",
+            "--target",
+            "target_binary_up_1d",
+            "-o",
+            models_dir,
+        ]
+    )
+    assert handle_model_command(args_train) == 0
+
+    # Find trained model file
+    saved_models = list(Path(models_dir).glob("*.joblib"))
+    assert len(saved_models) == 1
+    model_path = str(saved_models[0])
+
+    # 4. trady models inspect
+    args_insp = parser.parse_args(["models", "inspect", model_path])
+    assert handle_model_command(args_insp) == 0
+
+    # 5. trady models evaluate
+    args_eval = parser.parse_args(["models", "evaluate", model_path, labeled_parquet])
+    assert handle_model_command(args_eval) == 0

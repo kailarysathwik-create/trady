@@ -86,11 +86,8 @@ data/targets/*
 !data/targets/.gitkeep
 
 # Model weights, serialized artifacts, large experiment outputs
-models/*.pt
-models/*.pth
-models/*.onnx
-models/*.joblib
-models/*.pkl
+models/*
+!models/.gitkeep
 *.h5
 reports/*.pdf
 reports/*.html

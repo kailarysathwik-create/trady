@@ -24,12 +24,16 @@ classifiers = [
 ]
 dependencies = [
     "duckdb>=1.0.0",
+    "joblib>=1.6.0",
+    "lightgbm>=4.7.0",
     "numpy>=1.26.0",
     "pyarrow>=15.0.0",
     "pydantic>=2.5.0",
     "pytz>=2024.1",
     "pyyaml>=6.0.1",
+    "scikit-learn>=1.9.1",
     "tzdata>=2024.1",
+    "xgboost>=3.2.0",
 ]
 
 [project.optional-dependencies]
@@ -59,7 +63,10 @@ select = [
     "UP",  # pyupgrade
     "B",   # flake8-bugbear
 ]
-ignore = []
+ignore = [
+    "N803",  # Argument name should be lowercase (standard ML convention uses X)
+    "N806",  # Variable in function should be lowercase (standard ML convention uses X)
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"

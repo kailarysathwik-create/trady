@@ -1,39 +1,53 @@
-"""Model interface contracts for TRADY quantitative research.
+"""TRADY machine-learning model layer for quantitative research.
 
-NOTE: Concrete machine-learning and statistical models are intentionally not implemented
-in this initial foundation. This module establishes interface protocols.
+Provides:
+- Model abstraction (TradyModel) with schema validation and persistence
+- Naive baselines, Logistic Regression, Ridge, Random Forest, LightGBM, XGBoost
+- Strictly chronological splitting with purge/embargo gaps
+- Complete provenance metadata and evaluation metrics
 """
 
-from dataclasses import dataclass
-from typing import Any, Protocol, runtime_checkable
+from trady.models.base import TradyModel
+from trady.models.baseline import NaiveBaselineClassifier, NaiveBaselineRegressor
+from trady.models.boosting import (
+    TradyLightGBMClassifier,
+    TradyLightGBMRegressor,
+    TradyXGBoostClassifier,
+    TradyXGBoostRegressor,
+)
+from trady.models.experiment import ExperimentResult, run_model_experiment
+from trady.models.linear import TradyLogisticRegression, TradyRidgeRegression
+from trady.models.metadata import ModelMetadata
+from trady.models.metrics import (
+    evaluate_classification,
+    evaluate_model_predictions,
+    evaluate_regression,
+)
+from trady.models.registry import AVAILABLE_MODELS, create_model, list_available_models
+from trady.models.splitting import ChronologicalSplit, ChronologicalSplitter
+from trady.models.tree import TradyRandomForestClassifier, TradyRandomForestRegressor
 
-
-@dataclass(frozen=True)
-class ModelMetadata:
-    """Immutable model metadata for reproducibility tracking."""
-
-    model_id: str
-    architecture: str
-    hyperparameters: dict[str, Any]
-    random_seed: int
-
-
-@runtime_checkable
-class ResearchModel(Protocol):
-    """Protocol defining the core interface for research models."""
-
-    @property
-    def metadata(self) -> ModelMetadata:
-        """Model provenance and metadata."""
-        ...
-
-    def fit(self, features: Any, targets: Any) -> None:
-        """Fit model strictly on in-sample training data."""
-        ...
-
-    def predict(self, features: Any) -> Any:
-        """Generate out-of-sample inferences or probabilistic forecasts."""
-        ...
-
-
-__all__ = ["ModelMetadata", "ResearchModel"]
+__all__ = [
+    "AVAILABLE_MODELS",
+    "ChronologicalSplit",
+    "ChronologicalSplitter",
+    "ExperimentResult",
+    "ModelMetadata",
+    "NaiveBaselineClassifier",
+    "NaiveBaselineRegressor",
+    "TradyLightGBMClassifier",
+    "TradyLightGBMRegressor",
+    "TradyLogisticRegression",
+    "TradyModel",
+    "TradyRandomForestClassifier",
+    "TradyRandomForestRegressor",
+    "TradyRidgeRegression",
+    "TradyXGBoostClassifier",
+    "TradyXGBoostRegressor",
+    "create_model",
+    "evaluate_classification",
+    "evaluate_model_predictions",
+    "evaluate_regression",
+    "list_available_models",
+    "run_model_experiment",
+]

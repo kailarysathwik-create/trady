@@ -70,11 +70,13 @@ def build_parser() -> argparse.ArgumentParser:
     # Subsystems
     from trady.data.cli import add_data_subparsers
     from trady.features.cli import add_feature_subparsers
+    from trady.models.cli import add_model_subparsers
     from trady.targets.cli import add_target_subparsers
 
     add_data_subparsers(subparsers)
     add_feature_subparsers(subparsers)
     add_target_subparsers(subparsers)
+    add_model_subparsers(subparsers)
 
     return parser
 
@@ -133,6 +135,7 @@ def run_health_check(config_path: str | None = None, strict: bool = False) -> in
         "data/processed",
         "data/features",
         "data/targets",
+        "models",
         "notebooks",
         "reports",
         "scripts",
@@ -295,6 +298,11 @@ def main(argv: list[str] | None = None) -> NoReturn:
         from trady.targets.cli import handle_target_command
 
         exit_code = handle_target_command(args)
+        sys.exit(exit_code)
+    elif args.command == "models":
+        from trady.models.cli import handle_model_command
+
+        exit_code = handle_model_command(args)
         sys.exit(exit_code)
     else:
         parser.print_help()
