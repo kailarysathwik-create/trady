@@ -11,9 +11,9 @@ from trady.utils.reproducibility import get_system_info, set_seed
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the TRADY CLI argument parser."""
+    """Build the TRADE9 CLI argument parser."""
     parser = argparse.ArgumentParser(
-        prog="trady",
+        prog="trade9",
         description=(
             f"{__platform__} v{__version__}: Educational Quantitative Research & "
             "Paper-Trading Platform.\n\n"

@@ -44,6 +44,7 @@ dev = [
 ]
 
 [project.scripts]
+trade9 = "trady.cli:main"
 trady = "trady.cli:main"
 
 [tool.hatch.build.targets.wheel]

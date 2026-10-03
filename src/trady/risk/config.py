@@ -9,7 +9,7 @@ class RiskConfig:
     """Configurable research risk constraints and position sizing rules."""
 
     max_position_exposure: float | None = None
-    max_position_concentration: float = 1.0  # Max single position concentration (1.0 = 100%)
+    max_position_concentration: float = 1.0  # Max single position concentration
     max_portfolio_exposure: float = 1.0  # Max 100% gross exposure (unleveraged)
     max_drawdown_limit: float | None = (
         None  # Drawdown circuit breaker (e.g. 0.15 for 15%)
