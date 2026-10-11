@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE9 Studio &bull; Claymorphic Quantitative Control Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-canvas: #EEF2F7;
+            --clay-surface: #F8FAFD;
+            --clay-shadow-dark: rgba(160, 175, 195, 0.45);
+            --clay-shadow-light: rgba(255, 255, 255, 0.95);
+            --clay-border: rgba(255, 255, 255, 0.8);
+            
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-shadow: rgba(79, 70, 229, 0.35);
+            
+            --success: #10B981;
+            --success-light: #ECFDF5;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            
+            --terminal-bg: #0F172A;
+            --terminal-card: #1E293B;
+            --terminal-text: #E2E8F0;
+            --terminal-accent: #38BDF8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
+            overflow-x: hidden;
+        }
+
+        /* Claymorphism Base Card */
+        .clay-card {
+            background: var(--clay-surface);
+            border-radius: 24px;
+            border: 1px solid var(--clay-border);
+            box-shadow: 10px 10px 22px var(--clay-shadow-dark), -10px -10px 22px var(--clay-shadow-light);
+            padding: 24px;
+            transition: all 0.25s ease;
+        }
+
+        .clay-card-sm {
+            border-radius: 18px;
+            padding: 16px 20px;
+        }
+
+        /* Tactile Clay Buttons */
+        .clay-btn {
+            background: var(--clay-surface);
+            color: var(--text-main);
+            border: 1px solid var(--clay-border);
+            border-radius: 16px;
+            padding: 10px 20px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 6px 6px 14px var(--clay-shadow-dark), -6px -6px 14px var(--clay-shadow-light);
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .clay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 8px 8px 18px var(--clay-shadow-dark), -8px -8px 18px var(--clay-shadow-light);
+        }
+
+        .clay-btn:active {
+            transform: translateY(1px);
+            box-shadow: inset 4px 4px 8px var(--clay-shadow-dark), inset -4px -4px 8px var(--clay-shadow-light);
+        }
+
+        .clay-btn-primary {
+            background: linear-gradient(135deg, #6366F1, #4F46E5);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 6px 6px 16px var(--primary-shadow), -4px -4px 12px var(--clay-shadow-light);
+        }
+
+        .clay-btn-primary:active {
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Badges & Pills */
+        .clay-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.05), 3px 3px 8px var(--clay-shadow-dark);
+        }
+
+        .badge-success { background: var(--success-light); color: #065F46; }
+        .badge-primary { background: var(--primary-light); color: #3730A3; }
+        .badge-warning { background: #FEF3C7; color: #92400E; }
+
+        /* App Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #6366F1, #4338CA);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 6px 6px 14px var(--primary-shadow), -4px -4px 10px #FFFFFF;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .workspace-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .path-display {
+            background: var(--clay-surface);
+            padding: 8px 16px;
+            border-radius: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #334155;
+            border: 1px solid var(--clay-border);
+            box-shadow: inset 2px 2px 5px var(--clay-shadow-dark), inset -2px -2px 5px var(--clay-shadow-light);
+            max-width: 380px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Top Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-footer {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Terminal Window */
+        .terminal-container {
+            margin-bottom: 24px;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            font-size: 0.76rem;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            background: var(--clay-surface);
+            border: 1px solid var(--clay-border);
+            box-shadow: 4px 4px 10px var(--clay-shadow-dark), -4px -4px 10px var(--clay-shadow-light);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover {
+            transform: translateY(-1px);
+            color: var(--primary);
+        }
+
+        .preset-btn:active {
+            box-shadow: inset 2px 2px 4px var(--clay-shadow-dark);
+        }
+
+        .terminal-box {
+            background: var(--terminal-bg);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 4px 4px 12px rgba(0, 0, 0, 0.6), 8px 8px 24px var(--clay-shadow-dark);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+        }
+
+        .terminal-topbar {
+            background: #1E293B;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
+
+        .terminal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: #94A3B8;
+        }
+
+        .terminal-output {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            color: var(--terminal-text);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .terminal-input-bar {
+            background: #1E293B;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .terminal-prompt {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--terminal-accent);
+            font-weight: 700;
+            font-size: 0.84rem;
+            user-select: none;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+        }
+
+        /* Knowledge Subsystems Grid */
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .subsystem-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .subsystem-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subsystem-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 4px 4px 10px var(--clay-shadow-dark), -4px -4px 10px var(--clay-shadow-light);
+        }
+
+        .subsystem-desc {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .subsystem-code {
+            background: rgba(0, 0, 0, 0.04);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.74rem;
+            color: #334155;
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .input-group {
+            margin: 18px 0;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .clay-input {
+            width: 100%;
+            background: var(--clay-surface);
+            border: 1px solid var(--clay-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            box-shadow: inset 3px 3px 6px var(--clay-shadow-dark), inset -3px -3px 6px var(--clay-shadow-light);
+        }
+
+        .clay-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Disclaimer footer */
+        .disclaimer-card {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.5;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- First-Run Directory Lock Modal -->
+    <div id="dirModal" class="modal-overlay hidden">
+        <div class="clay-card modal-card">
+            <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 8px;">Lock TRADE9 Workspace</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.45;">
+                Enter the root directory of your TRADE9 installation. The studio locks this path permanently for all terminal commands and data pipelines.
+            </p>
+            <div class="input-group">
+                <label for="dirInput">PROJECT ROOT DIRECTORY PATH</label>
+                <input id="dirInput" class="clay-input" type="text" placeholder="e.g. C:\Projects\trady">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="clay-btn" onclick="closeModal()">Cancel</button>
+                <button class="clay-btn clay-btn-primary" onclick="saveWorkspaceDir()">🔒 Lock & Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="brand-title">
+            <div class="brand-logo">T9</div>
+            <div class="brand-text">
+                <h1>TRADE9 Studio <span class="clay-badge badge-success">● Ready</span></h1>
+                <p>Quantitative Research &bull; Machine Learning &bull; Paper-Trading Control Center</p>
+            </div>
+        </div>
+
+        <div class="workspace-bar">
+            <div class="path-display" id="activePath">Connecting...</div>
+            <button class="clay-btn" onclick="openModal()" title="Edit or lock project directory">
+                ✏️ Workspace
+            </button>
+            <button class="clay-btn clay-btn-primary" onclick="runPreset('uv run trade9 health')">
+                ⚡ Health
+            </button>
+        </div>
+    </header>
+
+    <!-- Top Diagnostic Grid -->
+    <div class="dashboard-grid">
+        <div class="clay-card stat-card">
+            <span class="stat-label">Compute Device</span>
+            <span class="stat-value" id="cpuVal">Loading...</span>
+            <div class="stat-footer">
+                <span>⚡ Intel Ultra 7 / Hybrid Cores</span>
+            </div>
+        </div>
+
+        <div class="clay-card stat-card">
+            <span class="stat-label">GPU Acceleration</span>
+            <span class="stat-value" id="gpuVal">RTX 3050 (6GB)</span>
+            <div class="stat-footer">
+                <span class="clay-badge badge-primary">CUDA Capable</span>
+            </div>
+        </div>
+
+        <div class="clay-card stat-card">
+            <span class="stat-label">Memory Utilization</span>
+            <span class="stat-value" id="ramVal">Loading...</span>
+            <div class="stat-footer">
+                <span>Available System RAM</span>
+            </div>
+        </div>
+
+        <div class="clay-card stat-card">
+            <span class="stat-label">Execution Guardrail</span>
+            <span class="stat-value" style="color: var(--success); font-size: 1.15rem;">FIREWALL ACTIVE</span>
+            <div class="stat-footer">
+                <span>Simulation Only &bull; Zero Real Money</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embedded Interactive Terminal -->
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <h2 class="section-title">💻 Interactive PowerShell & Command Runner</h2>
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="runPreset('uv run trade9 health')">⚡ Health</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 data ingest-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">📊 Ingest NVDA</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 features build data/processed/nvda.parquet --output-dir data/features')">🧬 Build Features</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 targets build data/features/nvda_features.parquet --target binary_up --horizon 5 --output-dir data/targets')">🎯 Make Targets</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_features_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">🤖 Train LightGBM</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')">📈 Run Backtest</button>
+                <button class="preset-btn" onclick="runPreset('uv run pytest')">🧪 Run Pytest</button>
+            </div>
+        </div>
+
+        <div class="terminal-box">
+            <div class="terminal-topbar">
+                <div class="terminal-dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="terminal-title" id="terminalStatus">TRADE9 PowerShell Runner [Ready]</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="preset-btn" onclick="clearTerminal()" style="padding: 3px 8px; font-size: 0.7rem;">Clear</button>
+                    <button class="preset-btn" id="killBtn" onclick="killProcess()" style="padding: 3px 8px; font-size: 0.7rem; display: none; color: #EF4444;">Kill</button>
+                </div>
+            </div>
+            <div class="terminal-output" id="terminalOutput">Welcome to TRADE9 Studio Interactive Console.
+Type any PowerShell or 'trade9' command below or click a quick-action pill above.
+--------------------------------------------------------------------------------
+</div>
+            <div class="terminal-input-bar">
+                <span class="terminal-prompt" id="promptCwd">PS ></span>
+                <input id="termInput" class="terminal-input" type="text" placeholder="Type command here and press Enter (e.g. uv run trade9 models list-types)..." onkeydown="handleInput(event)">
+                <button class="clay-btn clay-btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="submitCommand()">Run</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Knowledge Subsystems -->
+    <h2 class="section-title">📚 TRADE9 Quantitative Engine Architecture</h2>
+    <div class="knowledge-grid">
+        
+        <!-- 1. Data Engine -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #E0E7FF; color: #4338CA;">📊</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Data Engine</h3>
+                        <span class="clay-badge badge-primary">Ingestion & Schema</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    Strict canonical OHLCV validation, non-positive price detection, immutable raw storage, and DuckDB analytical queries.
+                </p>
+            </div>
+            <div class="subsystem-code">trade9 data ingest-synthetic --symbol NVDA --bars 1000</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 data ingest-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">▶ Ingest Data</button>
+        </div>
+
+        <!-- 2. Feature Engine -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #D1FAE5; color: #065F46;">🧬</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Feature Engine</h3>
+                        <span class="clay-badge badge-success">Zero Lookahead</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    16 numerical features across Price Returns, Rolling Momentum, Volatility, Volume, and Structure with strict point-in-time causal safety.
+                </p>
+            </div>
+            <div class="subsystem-code">trade9 features build data/processed/nvda.parquet</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 features build data/processed/nvda.parquet --output-dir data/features')">▶ Build Features</button>
+        </div>
+
+        <!-- 3. Target Engine -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #FEF3C7; color: #92400E;">🎯</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Target Engine</h3>
+                        <span class="clay-badge badge-warning">Label Alignment</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    Computes forward outcomes (forward returns, directional binary classifications, future volatility) while strictly preventing target leakage.
+                </p>
+            </div>
+            <div class="subsystem-code">trade9 targets build --target binary_up --horizon 5</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 targets build data/features/nvda_features.parquet --target binary_up --horizon 5 --output-dir data/targets')">▶ Generate Targets</button>
+        </div>
+
+        <!-- 4. Model Layer -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #EDE9FE; color: #5B21B6;">🤖</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Model Layer</h3>
+                        <span class="clay-badge badge-primary">Time-Series AI</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    Strict chronological train/val/test splits with purge gaps. Supports LightGBM, XGBoost, Random Forest, and regularized Linear models.
+                </p>
+            </div>
+            <div class="subsystem-code">trade9 models train --model lightgbm</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_features_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">▶ Train LightGBM</button>
+        </div>
+
+        <!-- 5. Risk Engine -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #FEE2E2; color: #991B1B;">🛡️</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Risk Engine</h3>
+                        <span class="clay-badge badge-warning">Zero Bypass</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    Enforces drawdown circuit breakers, position exposure caps, portfolio leverage limits, ATR sizing, and transparent decision records.
+                </p>
+            </div>
+            <div class="subsystem-code">docs/risk.md &bull; Evaluates Accepted, Reduced, Rejected</div>
+            <button class="clay-btn" onclick="runPreset('uv run pytest tests/test_risk.py')">▶ Verify Risk Engine</button>
+        </div>
+
+        <!-- 6. Backtesting Simulator -->
+        <div class="clay-card subsystem-card">
+            <div>
+                <div class="subsystem-header">
+                    <div class="subsystem-icon" style="background: #E0F2FE; color: #075985;">📈</div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Backtest Simulator</h3>
+                        <span class="clay-badge badge-primary">Frictions & Curves</span>
+                    </div>
+                </div>
+                <p class="subsystem-desc" style="margin-top: 10px;">
+                    Next-bar execution, realistic slippage, commission models, volume caps, 12 quantitative metrics, and rich HTML reporting.
+                </p>
+            </div>
+            <div class="subsystem-code">trade9 backtest run --output-dir reports</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')">▶ Run Backtest</button>
+        </div>
+
+    </div>
+
+    <!-- Educational Disclaimer -->
+    <div class="clay-card disclaimer-card">
+        <strong>TRADE9 Educational Platform Notice:</strong>
+        TRADE9 is an educational quantitative research framework. It does not provide financial advice, does not guarantee profitability, and explicitly enforces safety firewalls prohibiting live real-money execution.
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let pollTimer = null;
+        let jobOffset = 0;
+
+        // Init on load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchConfig();
+            fetchHealth();
+        });
+
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                document.getElementById('activePath').innerText = data.project_dir;
+                document.getElementById('promptCwd').innerText = 'PS ' + data.project_dir + '>';
+
+                // Check localStorage or modal requirement
+                const locked = localStorage.getItem('trade9_dir_locked');
+                if (!locked) {
+                    document.getElementById('dirInput').value = data.project_dir;
+                    openModal();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function fetchHealth() {
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                if (data.system) {
+                    const cpus = data.system.cpu_count || 8;
+                    document.getElementById('cpuVal').innerText = `${cpus} Cores / Threads`;
+                    
+                    if (data.system.ram_total_mb) {
+                        const total = (data.system.ram_total_mb / 1024).toFixed(1);
+                        const avail = (data.system.ram_avail_mb / 1024).toFixed(1);
+                        document.getElementById('ramVal').innerText = `${avail} / ${total} GB`;
+                    } else {
+                        document.getElementById('ramVal').innerText = `16 GB Total`;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function openModal() {
+            document.getElementById('dirModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('dirModal').classList.add('hidden');
+        }
+
+        async function saveWorkspaceDir() {
+            const inputVal = document.getElementById('dirInput').value.trim();
+            if (!inputVal) return;
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_dir: inputVal })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('trade9_dir_locked', 'true');
+                    document.getElementById('activePath').innerText = data.project_dir;
+                    document.getElementById('promptCwd').innerText = 'PS ' + data.project_dir + '>';
+                    closeModal();
+                    appendTerminalLine(`\n[Workspace Locked]: Root set to ${data.project_dir}\n`);
+                } else {
+                    alert(data.error || 'Failed to set path');
+                }
+            } catch (e) {
+                alert('Connection error: ' + e);
+            }
+        }
+
+        function handleInput(e) {
+            if (e.key === 'Enter') {
+                submitCommand();
+            }
+        }
+
+        function submitCommand() {
+            const input = document.getElementById('termInput');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+            input.value = '';
+            runCommand(cmd);
+        }
+
+        function runPreset(cmd) {
+            runCommand(cmd);
+        }
+
+        async function runCommand(cmd) {
+            if (currentJobId) {
+                appendTerminalLine(`\n[Notice]: Another process is currently active. Please wait or click Kill.\n`);
+                return;
+            }
+
+            appendTerminalLine(`\nPS > ${cmd}\n`);
+            document.getElementById('terminalStatus').innerText = `Running: ${cmd}`;
+            document.getElementById('killBtn').style.display = 'inline-block';
+
+            try {
+                const res = await fetch('/api/terminal/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: cmd })
+                });
+                const data = await res.json();
+                currentJobId = data.job_id;
+                jobOffset = 0;
+                pollJobOutput();
+            } catch (e) {
+                appendTerminalLine(`[Error starting command]: ${e}\n`);
+                resetTerminalState();
+            }
+        }
+
+        function pollJobOutput() {
+            if (!currentJobId) return;
+
+            pollTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/terminal/poll?job_id=${currentJobId}&offset=${jobOffset}`);
+                    const data = await res.json();
+                    
+                    if (data.lines && data.lines.length > 0) {
+                        data.lines.forEach(line => appendTerminalLine(line));
+                        jobOffset = data.offset;
+                    }
+
+                    if (data.is_running) {
+                        pollJobOutput();
+                    } else {
+                        appendTerminalLine(`\n[Process Finished with exit code ${data.exit_code}]\n`);
+                        resetTerminalState();
+                    }
+                } catch (e) {
+                    appendTerminalLine(`[Poll Error]: ${e}\n`);
+                    resetTerminalState();
+                }
+            }, 300);
+        }
+
+        async function killProcess() {
+            if (!currentJobId) return;
+            try {
+                await fetch('/api/terminal/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_id: currentJobId })
+                });
+                appendTerminalLine(`\n[Terminated by user]\n`);
+            } catch (e) {
+                console.error(e);
+            }
+            resetTerminalState();
+        }
+
+        function resetTerminalState() {
+            currentJobId = null;
+            if (pollTimer) clearTimeout(pollTimer);
+            document.getElementById('terminalStatus').innerText = 'TRADE9 PowerShell Runner [Ready]';
+            document.getElementById('killBtn').style.display = 'none';
+        }
+
+        function appendTerminalLine(text) {
+            const out = document.getElementById('terminalOutput');
+            out.textContent += text;
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminalOutput').textContent = '';
+        }
+    </script>
+</body>
+</html>

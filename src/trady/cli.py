@@ -79,6 +79,29 @@ def build_parser() -> argparse.ArgumentParser:
     add_model_subparsers(subparsers)
     add_backtest_subparsers(subparsers)
 
+    studio_parser = subparsers.add_parser(
+        "studio",
+        help="Launch the TRADE9 Claymorphic web studio and terminal",
+    )
+    studio_parser.add_argument(
+        "--port",
+        "-p",
+        type=int,
+        default=8090,
+        help="Local port (default: 8090)",
+    )
+    studio_parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host address (default: 127.0.0.1)",
+    )
+    studio_parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Do not automatically launch web browser",
+    )
+
     return parser
 
 
@@ -310,6 +333,15 @@ def main(argv: list[str] | None = None) -> NoReturn:
 
         exit_code = handle_backtest_command(args)
         sys.exit(exit_code)
+    elif args.command == "studio":
+        from trady.studio.server import start_studio_server
+
+        start_studio_server(
+            host=args.host,
+            port=args.port,
+            open_browser=not args.no_browser,
+        )
+        sys.exit(0)
     else:
         parser.print_help()
         sys.exit(1)
