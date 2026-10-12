@@ -544,10 +544,10 @@
             <h2 class="section-title">💻 Interactive PowerShell & Command Runner</h2>
             <div class="preset-buttons">
                 <button class="preset-btn" onclick="runPreset('uv run trade9 health')">⚡ Health</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 data ingest-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">📊 Ingest NVDA</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 features build data/processed/nvda.parquet --output-dir data/features')">🧬 Build Features</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 targets build data/features/nvda_features.parquet --target binary_up --horizon 5 --output-dir data/targets')">🎯 Make Targets</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_features_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">🤖 Train LightGBM</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">📊 Ingest NVDA</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 features compute data/processed/nvda.parquet')">🧬 Build Features</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')">🎯 Make Targets</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">🤖 Train LightGBM</button>
                 <button class="preset-btn" onclick="runPreset('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')">📈 Run Backtest</button>
                 <button class="preset-btn" onclick="runPreset('uv run pytest')">🧪 Run Pytest</button>
             </div>
@@ -614,8 +614,8 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     16 numerical features across Price Returns, Rolling Momentum, Volatility, Volume, and Structure with strict point-in-time causal safety.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 features build data/processed/nvda.parquet</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 features build data/processed/nvda.parquet --output-dir data/features')">▶ Build Features</button>
+            <div class="subsystem-code">trade9 features compute data/processed/nvda.parquet</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 features compute data/processed/nvda.parquet')">▶ Build Features</button>
         </div>
 
         <!-- 3. Target Engine -->
@@ -632,8 +632,8 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Computes forward outcomes (forward returns, directional binary classifications, future volatility) while strictly preventing target leakage.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 targets build --target binary_up --horizon 5</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 targets build data/features/nvda_features.parquet --target binary_up --horizon 5 --output-dir data/targets')">▶ Generate Targets</button>
+            <div class="subsystem-code">trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')">▶ Generate Targets</button>
         </div>
 
         <!-- 4. Model Layer -->
@@ -650,8 +650,8 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Strict chronological train/val/test splits with purge gaps. Supports LightGBM, XGBoost, Random Forest, and regularized Linear models.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 models train --model lightgbm</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_features_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">▶ Train LightGBM</button>
+            <div class="subsystem-code">trade9 models train data/targets/nvda_labeled.parquet --model lightgbm</div>
+            <button class="clay-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">▶ Train LightGBM</button>
         </div>
 
         <!-- 5. Risk Engine -->

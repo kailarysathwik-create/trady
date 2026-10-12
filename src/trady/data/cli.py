@@ -91,6 +91,7 @@ def add_data_subparsers(
     # 6. generate-synthetic
     gen_p = data_subparsers.add_parser(
         "generate-synthetic",
+        aliases=["ingest-synthetic"],
         help="Generate deterministic synthetic market data fixture",
     )
     gen_p.add_argument("--symbol", type=str, default="SPY", help="Ticker symbol")
@@ -252,7 +253,7 @@ def handle_data_command(args: argparse.Namespace) -> int:
             print(f"[ERROR] Query failed: {exc}")
             return 1
 
-    elif cmd == "generate-synthetic":
+    elif cmd in ("generate-synthetic", "ingest-synthetic"):
         provider = SyntheticDataProvider()
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -261,9 +262,21 @@ def handle_data_command(args: argparse.Namespace) -> int:
             timeframe=args.timeframe,
             num_bars=args.bars,
         )
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump({"records": records, "metadata": meta.to_dict()}, f, indent=2)
-        print(f"[OK] Generated {len(records)} synthetic bars saved to {out_path}")
+        if out_path.suffix.lower() == ".parquet":
+            cfg = NormalizationConfig(
+                deduplicate=True,
+                default_symbol=args.symbol,
+            )
+            ohlcv_records, _ = normalize_records(records, config=cfg)
+            saved_file = save_dataset(ohlcv_records, out_path, metadata=meta)
+            print(
+                f"[OK] Generated {len(ohlcv_records)} synthetic bars "
+                f"saved to {saved_file}"
+            )
+        else:
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump({"records": records, "metadata": meta.to_dict()}, f, indent=2)
+            print(f"[OK] Generated {len(records)} synthetic bars saved to {out_path}")
         return 0
 
     return 0

@@ -35,6 +35,7 @@ def add_target_subparsers(subparsers: argparse._SubParsersAction) -> None:
     # 2. trady targets compute <dataset>
     comp_p = tgt_subparsers.add_parser(
         "compute",
+        aliases=["build"],
         help="Compute forward targets on processed market data or feature datasets",
     )
     comp_p.add_argument(
@@ -54,6 +55,24 @@ def add_target_subparsers(subparsers: argparse._SubParsersAction) -> None:
         type=str,
         default=None,
         help="Destination Parquet path (default: data/targets/<stem>_labeled.parquet)",
+    )
+    comp_p.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Optional destination directory (e.g. data/targets)",
+    )
+    comp_p.add_argument(
+        "--target",
+        type=str,
+        default=None,
+        help="Single target identifier (e.g. binary_up, target_binary_up_5d)",
+    )
+    comp_p.add_argument(
+        "--horizon",
+        type=int,
+        default=None,
+        help="Optional forecast horizon in bars",
     )
     comp_p.add_argument(
         "--targets",
@@ -89,7 +108,7 @@ def handle_target_command(args: argparse.Namespace) -> int:
 
     if cmd == "list":
         return _cmd_list()
-    elif cmd == "compute":
+    elif cmd in ("compute", "build"):
         return _cmd_compute(args)
     elif cmd == "inspect":
         return _cmd_inspect(args.dataset)
@@ -131,20 +150,36 @@ def _cmd_compute(args: argparse.Namespace) -> int:
 
     if args.output:
         out_path = Path(args.output)
+    elif getattr(args, "output_dir", None):
+        stem = input_path.stem
+        out_path = Path(args.output_dir) / f"{stem}_labeled.parquet"
     else:
         stem = input_path.stem
         out_path = Path("data/targets") / f"{stem}_labeled.parquet"
 
-    selected = (
-        tuple(args.targets)
-        if args.targets
-        else (
+    # Handle single --target parameter if supplied
+    if getattr(args, "target", None):
+        t_name = args.target
+        h = getattr(args, "horizon", 5) or 5
+        if t_name == "binary_up":
+            selected = (f"target_binary_up_{h}d",)
+        elif t_name == "fwd_ret":
+            selected = (f"target_fwd_ret_{h}d",)
+        elif t_name == "fwd_vol":
+            selected = (f"target_fwd_vol_{h}d",)
+        elif t_name.startswith("target_"):
+            selected = (t_name,)
+        else:
+            selected = (f"target_{t_name}_{h}d",)
+    elif args.targets:
+        selected = tuple(args.targets)
+    else:
+        selected = (
             "target_fwd_ret_1d",
             "target_fwd_ret_5d",
             "target_binary_up_5d",
             "target_fwd_vol_5d",
         )
-    )
 
     config = TargetConfig(
         selected_targets=selected,

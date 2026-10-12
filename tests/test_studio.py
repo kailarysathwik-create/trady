@@ -1,6 +1,7 @@
 """Unit tests for TRADE9 Claymorphic Web Studio and Interactive Terminal."""
 
 import json
+import sys
 import threading
 import time
 from pathlib import Path
@@ -36,24 +37,34 @@ def test_studio_serves_html(studio_server: str) -> None:
 
 def test_studio_api_config_roundtrip(studio_server: str, tmp_path: Path) -> None:
     """Verify GET and POST /api/config endpoints."""
-    # 1. GET /api/config
-    with urlopen(f"{studio_server}/api/config") as resp:
-        assert resp.status == 200
-        data = json.loads(resp.read().decode("utf-8"))
-        assert data["platform"] == "TRADE9"
-        assert "project_dir" in data
+    orig_dir = Path.cwd()
+    try:
+        # 1. GET /api/config
+        with urlopen(f"{studio_server}/api/config") as resp:
+            assert resp.status == 200
+            data = json.loads(resp.read().decode("utf-8"))
+            assert data["platform"] == "TRADE9"
+            assert "project_dir" in data
 
-    # 2. POST /api/config with valid dir
-    req = Request(
-        f"{studio_server}/api/config",
-        data=json.dumps({"project_dir": str(tmp_path)}).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with urlopen(req) as resp:
-        assert resp.status == 200
-        res_data = json.loads(resp.read().decode("utf-8"))
-        assert res_data["success"] is True
-        assert res_data["project_dir"] == str(tmp_path)
+        # 2. POST /api/config with valid dir
+        req = Request(
+            f"{studio_server}/api/config",
+            data=json.dumps({"project_dir": str(tmp_path)}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with urlopen(req) as resp:
+            assert resp.status == 200
+            res_data = json.loads(resp.read().decode("utf-8"))
+            assert res_data["success"] is True
+            assert res_data["project_dir"] == str(tmp_path)
+    finally:
+        restore_req = Request(
+            f"{studio_server}/api/config",
+            data=json.dumps({"project_dir": str(orig_dir)}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with urlopen(restore_req) as resp:
+            assert resp.status == 200
 
 
 def test_studio_api_health(studio_server: str) -> None:
@@ -68,7 +79,7 @@ def test_studio_api_health(studio_server: str) -> None:
 
 def test_studio_terminal_run_and_poll(studio_server: str) -> None:
     """Verify executing command via terminal API and polling output."""
-    echo_cmd = "echo TRADE9_TEST_OK"
+    echo_cmd = f'"{sys.executable}" -c "print(\'TRADE9_TEST_OK\')"'
     req = Request(
         f"{studio_server}/api/terminal/run",
         data=json.dumps({"command": echo_cmd}).encode("utf-8"),

@@ -40,16 +40,28 @@ class CommandJob:
         try:
             # On Windows, execute via powershell if available, fallback to cmd/shell
             shell_cmd = self.command
-            self.process = subprocess.Popen(
-                shell_cmd,
-                shell=True,
-                cwd=self.cwd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                universal_newlines=True,
-            )
+            target_cwd = self.cwd if Path(self.cwd).is_dir() else str(Path.cwd())
+            try:
+                self.process = subprocess.Popen(
+                    shell_cmd,
+                    shell=True,
+                    cwd=target_cwd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True,
+                )
+            except PermissionError:
+                self.process = subprocess.Popen(
+                    shell_cmd,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True,
+                )
 
             if self.process.stdout:
                 for line in self.process.stdout:

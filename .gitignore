@@ -93,3 +93,6 @@ reports/*
 !reports/.gitkeep
 !notebooks/.gitkeep
 !scripts/.gitkeep
+
+# Trade9 Studio local config
+.trade9-studio.json

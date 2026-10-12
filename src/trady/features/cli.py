@@ -41,6 +41,7 @@ def add_feature_subparsers(subparsers: argparse._SubParsersAction) -> None:
     # 2. trady features compute <dataset>
     comp_p = feat_subparsers.add_parser(
         "compute",
+        aliases=["build"],
         help="Compute causal features on a processed OHLCV dataset",
     )
     comp_p.add_argument(
@@ -54,6 +55,12 @@ def add_feature_subparsers(subparsers: argparse._SubParsersAction) -> None:
         type=str,
         default=None,
         help="Target Parquet path (default: data/features/<stem>_features.parquet)",
+    )
+    comp_p.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Optional directory to save features (e.g. data/features)",
     )
     comp_p.add_argument(
         "--groups",
@@ -96,7 +103,7 @@ def handle_feature_command(args: argparse.Namespace) -> int:
 
     if cmd == "list":
         return _cmd_list(args.group)
-    elif cmd == "compute":
+    elif cmd in ("compute", "build"):
         return _cmd_compute(args)
     elif cmd == "inspect":
         return _cmd_inspect(args.dataset)
@@ -135,6 +142,9 @@ def _cmd_compute(args: argparse.Namespace) -> int:
     # Determine output path
     if args.output:
         out_path = Path(args.output)
+    elif getattr(args, "output_dir", None):
+        stem = input_path.stem
+        out_path = Path(args.output_dir) / f"{stem}_features.parquet"
     else:
         stem = input_path.stem
         out_path = Path("data/features") / f"{stem}_features.parquet"
