@@ -19,7 +19,7 @@ logger = get_logger("cli.data")
 
 
 def add_data_subparsers(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    subparsers: argparse._SubParsersAction,
 ) -> None:
     """Attach the 'data' subcommand tree to the TRADY CLI parser."""
     data_parser = subparsers.add_parser(
