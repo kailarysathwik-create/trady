@@ -116,3 +116,37 @@ def test_studio_api_assistant_status(studio_server: str) -> None:
         assert "target_model" in data
         assert "available_tools" in data
         assert len(data["available_tools"]) == 6
+
+
+def test_studio_terminal_utf8_output(studio_server: str) -> None:
+    """Verify terminal runner safely handles UTF-8 bytes without charmap errors."""
+    echo_cmd = (
+        f'"{sys.executable}" -c '
+        f'"import sys; sys.stdout.buffer.write(b\'\\xe2\\x96\\x88\\x8f\\n\'); '
+        f'sys.stdout.flush()"'
+    )
+    req = Request(
+        f"{studio_server}/api/terminal/run",
+        data=json.dumps({"command": echo_cmd}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with urlopen(req) as resp:
+        assert resp.status == 200
+        res = json.loads(resp.read().decode("utf-8"))
+        job_id = res["job_id"]
+
+    lines = []
+    for _ in range(20):
+        time.sleep(0.15)
+        with urlopen(
+            f"{studio_server}/api/terminal/poll?job_id={job_id}&offset=0"
+        ) as poll_resp:
+            poll_data = json.loads(poll_resp.read().decode("utf-8"))
+            lines = poll_data.get("lines", [])
+            if not poll_data.get("is_running", True):
+                break
+
+    full_output = "".join(lines)
+    assert "[Execution Error]" not in full_output
+    assert poll_data.get("exit_code") == 0
+
