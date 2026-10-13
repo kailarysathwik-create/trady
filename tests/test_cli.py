@@ -369,3 +369,54 @@ def test_cli_models_workflow(
     )
     assert handle_backtest_command(args_bt_wf) == 0
     assert (Path(wf_dir) / "walk_forward_summary.csv").is_file()
+
+
+def test_cli_data_download_preview_and_run(tmp_path: Path) -> None:
+    """Verify 'trade9 data download' CLI command for preview and file storage."""
+    from unittest.mock import MagicMock, patch
+
+    import pandas as pd
+
+    from trady.data.cli import handle_data_command
+
+    dates = pd.date_range("2024-01-08", periods=5, freq="B", tz="UTC")
+    data = {
+        "Open": [21500.0, 21550.0, 21600.0, 21580.0, 21620.0],
+        "High": [21600.0, 21650.0, 21700.0, 21650.0, 21720.0],
+        "Low": [21450.0, 21500.0, 21550.0, 21520.0, 21580.0],
+        "Close": [21580.0, 21620.0, 21680.0, 21600.0, 21710.0],
+        "Volume": [1500000.0, 1600000.0, 1450000.0, 1700000.0, 1800000.0],
+    }
+    mock_df = pd.DataFrame(data, index=dates)
+
+    parser = build_parser()
+
+    with patch("yfinance.Ticker") as mock_ticker_cls:
+        mock_instance = MagicMock()
+        mock_instance.history.return_value = mock_df
+        mock_ticker_cls.return_value = mock_instance
+
+        # 1. Test preview
+        args_prev = parser.parse_args(
+            ["data", "download", "--symbol", "^NSEI", "--preview"]
+        )
+        assert handle_data_command(args_prev) == 0
+
+        # 2. Test actual download to tmp_path
+        out_proc = str(tmp_path / "nsei.parquet")
+        raw_proc = str(tmp_path / "nsei_raw.json")
+        args_dl = parser.parse_args(
+            [
+                "data",
+                "download",
+                "--symbol",
+                "^NSEI",
+                "-o",
+                out_proc,
+                "--raw-output",
+                raw_proc,
+            ]
+        )
+        assert handle_data_command(args_dl) == 0
+        assert Path(out_proc).exists()
+        assert Path(raw_proc).exists()

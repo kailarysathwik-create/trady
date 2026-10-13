@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 import pyarrow as pa
@@ -94,6 +94,8 @@ class ValidationResult:
 def validate_records(
     records: Sequence[OHLCVRecord | dict[str, Any]],
     expected_symbol: str | None = None,
+    expected_start: datetime | None = None,
+    expected_end: datetime | None = None,
 ) -> ValidationResult:
     """Validate a sequence of OHLCV records or dictionaries against TRADY invariants."""
     errors: list[ValidationError] = []
@@ -208,6 +210,34 @@ def validate_records(
                         column="timestamp",
                     )
                 )
+
+        # 2b. Trading session calendar gap detection (distinguishes weekends/holidays)
+        if prev_time is not None and timestamp > prev_time:
+            delta_days = (timestamp.date() - prev_time.date()).days
+            if delta_days > 4:
+                # Count missing business days between prev_time and timestamp
+                missed_b_days = sum(
+                    1
+                    for d in range(1, delta_days)
+                    if (prev_time.date() + timedelta(days=d)).weekday() < 5
+                )
+                if missed_b_days >= 3:
+                    warnings.append(
+                        ValidationWarning(
+                            code="WARN_TRADING_SESSION_GAP",
+                            message=(
+                                f"Suspicious gap of {delta_days} calendar days "
+                                f"({missed_b_days} business days) between "
+                                f"{prev_time.date()} and {timestamp.date()}"
+                            ),
+                            row_index=idx,
+                            column="timestamp",
+                            details={
+                                "calendar_days": delta_days,
+                                "business_days": missed_b_days,
+                            },
+                        )
+                    )
 
         # 3. Duplicate timestamp / symbol-timestamp check
         key = (symbol, timestamp)
@@ -326,6 +356,63 @@ def validate_records(
                 )
             )
 
+    # 8. Date range verification against expected bounds
+    if records and expected_start is not None:
+        first_val = (
+            records[0].timestamp
+            if isinstance(records[0], OHLCVRecord)
+            else records[0].get("timestamp")
+        )
+        if isinstance(first_val, str):
+            try:
+                first_dt = datetime.fromisoformat(first_val)
+            except Exception:
+                first_dt = None
+        elif isinstance(first_val, datetime):
+            first_dt = first_val
+        else:
+            first_dt = None
+
+        if first_dt and (first_dt.date() - expected_start.date()).days > 7:
+            warnings.append(
+                ValidationWarning(
+                    code="WARN_DATE_RANGE_MISMATCH",
+                    message=(
+                        f"Dataset start date ({first_dt.date()}) is more than 7 days "
+                        f"later than requested start date ({expected_start.date()})"
+                    ),
+                    column="timestamp",
+                )
+            )
+
+    if records and expected_end is not None:
+        last_val = (
+            records[-1].timestamp
+            if isinstance(records[-1], OHLCVRecord)
+            else records[-1].get("timestamp")
+        )
+        if isinstance(last_val, str):
+            try:
+                last_dt = datetime.fromisoformat(last_val)
+            except Exception:
+                last_dt = None
+        elif isinstance(last_val, datetime):
+            last_dt = last_val
+        else:
+            last_dt = None
+
+        if last_dt and (expected_end.date() - last_dt.date()).days > 7:
+            warnings.append(
+                ValidationWarning(
+                    code="WARN_DATE_RANGE_MISMATCH",
+                    message=(
+                        f"Dataset end date ({last_dt.date()}) is more than 7 days "
+                        f"earlier than requested end date ({expected_end.date()})"
+                    ),
+                    column="timestamp",
+                )
+            )
+
     return ValidationResult(
         is_valid=len(errors) == 0,
         total_records=len(records),
@@ -335,7 +422,10 @@ def validate_records(
 
 
 def validate_arrow_table(
-    table: pa.Table, expected_symbol: str | None = None
+    table: pa.Table,
+    expected_symbol: str | None = None,
+    expected_start: datetime | None = None,
+    expected_end: datetime | None = None,
 ) -> ValidationResult:
     """Validate a PyArrow Table containing market data against TRADY canonical rules."""
     errors: list[ValidationError] = []
@@ -374,4 +464,9 @@ def validate_arrow_table(
 
     # Convert table to row-level dictionaries for detailed invariant checking
     pydict_rows = table.to_pylist()
-    return validate_records(pydict_rows, expected_symbol=expected_symbol)
+    return validate_records(
+        pydict_rows,
+        expected_symbol=expected_symbol,
+        expected_start=expected_start,
+        expected_end=expected_end,
+    )

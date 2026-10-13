@@ -416,9 +416,7 @@ TOOL_DEFINITIONS = [
                 "properties": {
                     "experiment_id": {
                         "type": "string",
-                        "description": (
-                            "Optional model ID or experiment ID filter."
-                        ),
+                        "description": ("Optional model ID or experiment ID filter."),
                     }
                 },
             },
@@ -437,15 +435,11 @@ TOOL_DEFINITIONS = [
                 "properties": {
                     "exp_id_a": {
                         "type": "string",
-                        "description": (
-                            "First model ID or experiment ID."
-                        ),
+                        "description": ("First model ID or experiment ID."),
                     },
                     "exp_id_b": {
                         "type": "string",
-                        "description": (
-                            "Second model ID or experiment ID."
-                        ),
+                        "description": ("Second model ID or experiment ID."),
                     },
                 },
                 "required": ["exp_id_a", "exp_id_b"],
@@ -464,9 +458,7 @@ TOOL_DEFINITIONS = [
                 "properties": {
                     "report_name": {
                         "type": "string",
-                        "description": (
-                            "Optional report filename filter."
-                        ),
+                        "description": ("Optional report filename filter."),
                     }
                 },
             },

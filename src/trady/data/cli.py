@@ -30,6 +30,69 @@ def add_data_subparsers(
         dest="data_command", help="Data subcommands"
     )
 
+    # 0. download
+    dl_p = data_subparsers.add_parser(
+        "download",
+        help="Download and validate real historical market data (Yahoo Finance)",
+    )
+    dl_p.add_argument(
+        "--symbol",
+        "-s",
+        type=str,
+        default="^NSEI",
+        help="Ticker symbol to download (default: ^NSEI, e.g. SPY, AAPL)",
+    )
+    dl_p.add_argument(
+        "--start",
+        type=str,
+        default=None,
+        help="Start date in YYYY-MM-DD format (inclusive)",
+    )
+    dl_p.add_argument(
+        "--end",
+        type=str,
+        default=None,
+        help="End date in YYYY-MM-DD format (exclusive)",
+    )
+    dl_p.add_argument(
+        "--timeframe",
+        "--interval",
+        dest="timeframe",
+        type=str,
+        default="1d",
+        help="Bar timeframe interval (default: 1d)",
+    )
+    dl_p.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Custom destination path for normalized Parquet file",
+    )
+    dl_p.add_argument(
+        "--raw-output",
+        type=str,
+        default=None,
+        help="Custom destination path for raw JSON response file",
+    )
+    dl_p.add_argument(
+        "--preview",
+        "--dry-run",
+        dest="preview",
+        action="store_true",
+        help="Preview downloaded data without writing to disk",
+    )
+    dl_p.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing raw and processed dataset files",
+    )
+    dl_p.add_argument(
+        "--auto-adjust",
+        action="store_true",
+        help="Adjust historical prices for stock splits and dividends",
+    )
+
     # 1. validate
     val_p = data_subparsers.add_parser(
         "validate", help="Validate a dataset against TRADY canonical invariants"
@@ -143,7 +206,66 @@ def handle_data_command(args: argparse.Namespace) -> int:
         )
         return 0
 
-    if cmd == "validate":
+    if cmd == "download":
+        from trady.data.ingestion import download_and_ingest_market_data
+
+        print("=" * 65)
+        print(" TRADY HISTORICAL MARKET DATA INGESTION")
+        print("=" * 65)
+        print(f" Symbol:       {args.symbol}")
+        print(f" Date Range:   {args.start or 'Earliest'} to {args.end or 'Latest'}")
+        print(f" Timeframe:    {args.timeframe}")
+        adj_str = "Auto-Adjusted" if args.auto_adjust else "Unadjusted"
+        mode_str = "DRY-RUN / PREVIEW" if args.preview else "IN-FLIGHT INGESTION"
+        print(f" Adjustments:  {adj_str}")
+        print(f" Mode:         {mode_str}")
+        print("=" * 65)
+
+        try:
+            res = download_and_ingest_market_data(
+                symbol=args.symbol,
+                start_date=args.start,
+                end_date=args.end,
+                timeframe=args.timeframe,
+                custom_output=args.output,
+                custom_raw_output=args.raw_output,
+                overwrite=args.overwrite,
+                auto_adjust=args.auto_adjust,
+                preview_only=args.preview,
+            )
+
+            print(f"\n[OK] Ingestion Successful: {res['record_count']} bars retrieved.")
+            print(f" Actual Period: {res['start_time']} to {res['end_time']}")
+
+            if args.preview:
+                print("\nSample Preview (First 5 Bars):")
+                for bar in res["preview_records"]:
+                    print(
+                        f"  {bar['timestamp'][:10]} | O: {bar['open']:>8.2f} | "
+                        f"H: {bar['high']:>8.2f} | L: {bar['low']:>8.2f} | "
+                        f"C: {bar['close']:>8.2f} | V: {bar['volume']:>11.0f}"
+                    )
+                print("\n[Notice]: Dry-run preview complete. No files written to disk.")
+            else:
+                print(f" Raw Archive:   {res['raw_file']}")
+                print(f" Normalized:    {res['processed_file']}")
+                print(f" Metadata:      {res['meta_file']}")
+
+            val = res["validation"]
+            if val.warnings:
+                print(f"\nValidation Notice: {len(val.warnings)} warning(s) detected:")
+                for w in val.warnings[:5]:
+                    print(f"  - [{w.code}]: {w.message}")
+
+            return 0
+        except FileExistsError as fe:
+            print(f"\n[ERROR] Overwrite Protection: {fe}")
+            return 1
+        except Exception as exc:
+            print(f"\n[ERROR] Ingestion Failed: {exc}")
+            return 1
+
+    elif cmd == "validate":
         target = Path(args.dataset)
         if not target.is_file():
             print(f"[ERROR] Target file does not exist: {target}")

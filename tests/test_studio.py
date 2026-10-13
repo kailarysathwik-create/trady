@@ -122,7 +122,7 @@ def test_studio_terminal_utf8_output(studio_server: str) -> None:
     """Verify terminal runner safely handles UTF-8 bytes without charmap errors."""
     echo_cmd = (
         f'"{sys.executable}" -c '
-        f'"import sys; sys.stdout.buffer.write(b\'\\xe2\\x96\\x88\\x8f\\n\'); '
+        f"\"import sys; sys.stdout.buffer.write(b'\\xe2\\x96\\x88\\x8f\\n'); "
         f'sys.stdout.flush()"'
     )
     req = Request(
@@ -149,4 +149,3 @@ def test_studio_terminal_utf8_output(studio_server: str) -> None:
     full_output = "".join(lines)
     assert "[Execution Error]" not in full_output
     assert poll_data.get("exit_code") == 0
-

@@ -35,6 +35,7 @@ dependencies = [
     "scikit-learn>=1.9.1",
     "tzdata>=2024.1",
     "xgboost>=3.2.0",
+    "yfinance>=1.7.0",
 ]
 
 [project.optional-dependencies]
@@ -75,6 +76,9 @@ minversion = "8.0"
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-v --strict-markers"
+markers = [
+    "network: Tests that require external internet access",
+]
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]

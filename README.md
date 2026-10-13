@@ -140,6 +140,14 @@ trady system
 trady assistant status
 trady assistant ask "What datasets are available?"
 trady assistant chat
+
+# Real historical market data download (Yahoo Finance)
+trady data download --symbol ^NSEI --start 2023-01-01 --end 2024-01-01 --preview
+trady data download --symbol ^NSEI --start 2023-01-01 --end 2024-01-01
+
+# Inspect and validate ingested dataset
+trady data inspect data/processed/nsei_1d.parquet
+trady data validate data/processed/nsei_1d.parquet
 ```
 
 ---
