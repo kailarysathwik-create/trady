@@ -169,6 +169,8 @@ class StudioHandler(BaseHTTPRequestHandler):
             self._handle_terminal_poll(query)
         elif path == "/api/artifacts":
             self._handle_get_artifacts()
+        elif path == "/api/assistant/status":
+            self._handle_get_assistant_status()
         else:
             self.send_error(404, "Not Found")
 
@@ -188,6 +190,8 @@ class StudioHandler(BaseHTTPRequestHandler):
             self._handle_terminal_run(payload)
         elif path == "/api/terminal/kill":
             self._handle_terminal_kill(payload)
+        elif path == "/api/assistant/chat":
+            self._handle_post_assistant_chat(payload)
         else:
             self.send_error(404, "Not Found")
 
@@ -344,6 +348,37 @@ class StudioHandler(BaseHTTPRequestHandler):
                         )
 
         self.send_json(200, artifacts)
+
+    def _handle_get_assistant_status(self) -> None:
+        from trady.assistant.service import AssistantService
+
+        service = AssistantService(project_dir=GLOBAL_CONTEXT.project_dir)
+        status = service.get_status()
+        self.send_json(200, status)
+
+    def _handle_post_assistant_chat(self, payload: dict) -> None:
+        from trady.assistant.service import AssistantService
+
+        msg = payload.get("message", "").strip()
+        history = payload.get("history", [])
+        model = payload.get("model", None)
+
+        if not msg:
+            self.send_json(400, {"error": "Message cannot be empty."})
+            return
+
+        service = AssistantService(project_dir=GLOBAL_CONTEXT.project_dir)
+        resp = service.chat(message=msg, history=history, model=model)
+        self.send_json(
+            200,
+            {
+                "content": resp.content,
+                "tool_calls_made": resp.tool_calls_made,
+                "model_used": resp.model_used,
+                "status": resp.status,
+                "error": resp.error,
+            },
+        )
 
 
 def start_studio_server(

@@ -141,6 +141,33 @@ class SafetyConfig(BaseModel):
         return self
 
 
+class AssistantConfig(BaseModel):
+    """Configuration for local AI quantitative research assistant."""
+
+    model_config = ConfigDict(frozen=True)
+
+    ollama_endpoint: str = Field(
+        default="http://127.0.0.1:11434",
+        description="Local Ollama HTTP API endpoint",
+    )
+    model_name: str = Field(
+        default="qwen3:4b",
+        description="Default local LLM model name in Ollama",
+    )
+    timeout_seconds: float = Field(
+        default=120.0,
+        ge=5.0,
+        le=600.0,
+        description="HTTP request timeout for local LLM inference",
+    )
+    temperature: float = Field(
+        default=0.2,
+        ge=0.0,
+        le=1.0,
+        description="Sampling temperature (low for grounded quantitative facts)",
+    )
+
+
 class Settings(BaseModel):
     """Root configuration model for TRADY."""
 
@@ -151,3 +178,4 @@ class Settings(BaseModel):
     paths: PathsConfig = Field(default_factory=PathsConfig)
     hardware: HardwareConfig = Field(default_factory=HardwareConfig)
     safety: SafetyConfig = Field(default_factory=SafetyConfig)
+    assistant: AssistantConfig = Field(default_factory=AssistantConfig)

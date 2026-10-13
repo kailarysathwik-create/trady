@@ -67,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect target compute environment and hardware specifications",
     )
 
+    from trady.assistant.cli import add_assistant_subparsers
     from trady.backtesting.cli import add_backtest_subparsers
     from trady.data.cli import add_data_subparsers
     from trady.features.cli import add_feature_subparsers
@@ -78,6 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_target_subparsers(subparsers)
     add_model_subparsers(subparsers)
     add_backtest_subparsers(subparsers)
+    add_assistant_subparsers(subparsers)
 
     studio_parser = subparsers.add_parser(
         "studio",
@@ -332,6 +334,11 @@ def main(argv: list[str] | None = None) -> NoReturn:
         from trady.backtesting.cli import handle_backtest_command
 
         exit_code = handle_backtest_command(args)
+        sys.exit(exit_code)
+    elif args.command == "assistant":
+        from trady.assistant.cli import handle_assistant_command
+
+        exit_code = handle_assistant_command(args)
         sys.exit(exit_code)
     elif args.command == "studio":
         from trady.studio.server import start_studio_server

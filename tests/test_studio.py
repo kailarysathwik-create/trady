@@ -105,3 +105,14 @@ def test_studio_terminal_run_and_poll(studio_server: str) -> None:
 
     full_text = "".join(output_lines)
     assert "TRADE9_TEST_OK" in full_text
+
+
+def test_studio_api_assistant_status(studio_server: str) -> None:
+    """Verify GET /api/assistant/status returns assistant diagnostics."""
+    with urlopen(f"{studio_server}/api/assistant/status") as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert "is_running" in data
+        assert "target_model" in data
+        assert "available_tools" in data
+        assert len(data["available_tools"]) == 6

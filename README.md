@@ -135,6 +135,11 @@ trady config
 
 # Inspect target compute hardware diagnostics
 trady system
+
+# Local AI Assistant diagnostics & queries
+trady assistant status
+trady assistant ask "What datasets are available?"
+trady assistant chat
 ```
 
 ---
