@@ -396,6 +396,14 @@
             font-size: 0.74rem;
             color: #334155;
             box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            word-break: break-all;
+            transition: all 0.15s ease;
+        }
+
+        .subsystem-code:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
         }
 
         /* Modal Overlay */
@@ -541,15 +549,9 @@
     <!-- Embedded Interactive Terminal -->
     <div class="terminal-container">
         <div class="terminal-header">
-            <h2 class="section-title">💻 Interactive PowerShell & Command Runner</h2>
-            <div class="preset-buttons">
-                <button class="preset-btn" onclick="runPreset('uv run trade9 health')">⚡ Health</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">📊 Ingest NVDA</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 features compute data/processed/nvda.parquet')">🧬 Build Features</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')">🎯 Make Targets</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">🤖 Train LightGBM</button>
-                <button class="preset-btn" onclick="runPreset('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')">📈 Run Backtest</button>
-                <button class="preset-btn" onclick="runPreset('uv run pytest')">🧪 Run Pytest</button>
+            <h2 class="section-title">💻 Interactive PowerShell Console</h2>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+                Direct PowerShell environment &bull; Path locked
             </div>
         </div>
 
@@ -567,7 +569,7 @@
                 </div>
             </div>
             <div class="terminal-output" id="terminalOutput">Welcome to TRADE9 Studio Interactive Console.
-Type any PowerShell or 'trade9' command below or click a quick-action pill above.
+Type any PowerShell or 'trade9' command below to execute directly in your workspace.
 --------------------------------------------------------------------------------
 </div>
             <div class="terminal-input-bar">
@@ -596,8 +598,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Strict canonical OHLCV validation, non-positive price detection, immutable raw storage, and DuckDB analytical queries.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 data ingest-synthetic --symbol NVDA --bars 1000</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 data ingest-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')">▶ Ingest Data</button>
+            <div class="subsystem-code" onclick="setCommand('uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')" title="Click to copy into console">uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet</div>
         </div>
 
         <!-- 2. Feature Engine -->
@@ -614,8 +615,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     16 numerical features across Price Returns, Rolling Momentum, Volatility, Volume, and Structure with strict point-in-time causal safety.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 features compute data/processed/nvda.parquet</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 features compute data/processed/nvda.parquet')">▶ Build Features</button>
+            <div class="subsystem-code" onclick="setCommand('uv run trade9 features compute data/processed/nvda.parquet')" title="Click to copy into console">uv run trade9 features compute data/processed/nvda.parquet</div>
         </div>
 
         <!-- 3. Target Engine -->
@@ -632,8 +632,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Computes forward outcomes (forward returns, directional binary classifications, future volatility) while strictly preventing target leakage.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')">▶ Generate Targets</button>
+            <div class="subsystem-code" onclick="setCommand('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')" title="Click to copy into console">uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet</div>
         </div>
 
         <!-- 4. Model Layer -->
@@ -650,8 +649,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Strict chronological train/val/test splits with purge gaps. Supports LightGBM, XGBoost, Random Forest, and regularized Linear models.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 models train data/targets/nvda_labeled.parquet --model lightgbm</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')">▶ Train LightGBM</button>
+            <div class="subsystem-code" onclick="setCommand('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')" title="Click to copy into console">uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models</div>
         </div>
 
         <!-- 5. Risk Engine -->
@@ -668,8 +666,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Enforces drawdown circuit breakers, position exposure caps, portfolio leverage limits, ATR sizing, and transparent decision records.
                 </p>
             </div>
-            <div class="subsystem-code">docs/risk.md &bull; Evaluates Accepted, Reduced, Rejected</div>
-            <button class="clay-btn" onclick="runPreset('uv run pytest tests/test_risk.py')">▶ Verify Risk Engine</button>
+            <div class="subsystem-code" onclick="setCommand('uv run pytest tests/test_risk.py')" title="Click to copy into console">uv run pytest tests/test_risk.py</div>
         </div>
 
         <!-- 6. Backtesting Simulator -->
@@ -686,8 +683,7 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
                     Next-bar execution, realistic slippage, commission models, volume caps, 12 quantitative metrics, and rich HTML reporting.
                 </p>
             </div>
-            <div class="subsystem-code">trade9 backtest run --output-dir reports</div>
-            <button class="clay-btn" onclick="runPreset('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')">▶ Run Backtest</button>
+            <div class="subsystem-code" onclick="setCommand('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')" title="Click to copy into console">uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports</div>
         </div>
 
     </div>
@@ -792,6 +788,13 @@ Type any PowerShell or 'trade9' command below or click a quick-action pill above
             if (!cmd) return;
             input.value = '';
             runCommand(cmd);
+        }
+
+        function setCommand(cmd) {
+            const input = document.getElementById('termInput');
+            input.value = cmd;
+            input.focus();
+            appendTerminalLine(`\n[Prompt updated]: ${cmd}\n`);
         }
 
         function runPreset(cmd) {
