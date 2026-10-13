@@ -270,7 +270,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 480px;
+            height: 640px;
         }
 
         .terminal-topbar {
@@ -706,7 +706,8 @@
                     <div class="dot dot-green"></div>
                 </div>
                 <div class="terminal-title" id="terminalStatus">TRADE9 PowerShell Runner [Ready]</div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="preset-btn" id="copyTermBtn" onclick="copyTerminalOutput()" style="padding: 3px 10px; font-size: 0.72rem; display: flex; align-items: center; gap: 4px;" title="Copy all terminal reports and outputs">📋 Copy Output</button>
                     <button class="preset-btn" onclick="clearTerminal()" style="padding: 3px 8px; font-size: 0.7rem;">Clear</button>
                     <button class="preset-btn" id="killBtn" onclick="killProcess()" style="padding: 3px 8px; font-size: 0.7rem; display: none; color: #EF4444;">Kill</button>
                 </div>
@@ -723,113 +724,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
         </div>
     </div>
 
-    <!-- Knowledge Subsystems -->
-    <h2 class="section-title">📚 TRADE9 Quantitative Engine Architecture</h2>
-    <div class="knowledge-grid">
-        
-        <!-- 1. Data Engine -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #E0E7FF; color: #4338CA;">📊</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Data Engine</h3>
-                        <span class="clay-badge badge-primary">Ingestion & Schema</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    Strict canonical OHLCV validation, non-positive price detection, immutable raw storage, and DuckDB analytical queries.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet')" title="Click to copy into console">uv run trade9 data generate-synthetic --symbol NVDA --bars 1000 --output data/processed/nvda.parquet</div>
-        </div>
 
-        <!-- 2. Feature Engine -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #D1FAE5; color: #065F46;">🧬</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Feature Engine</h3>
-                        <span class="clay-badge badge-success">Zero Lookahead</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    16 numerical features across Price Returns, Rolling Momentum, Volatility, Volume, and Structure with strict point-in-time causal safety.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run trade9 features compute data/processed/nvda.parquet')" title="Click to copy into console">uv run trade9 features compute data/processed/nvda.parquet</div>
-        </div>
-
-        <!-- 3. Target Engine -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #FEF3C7; color: #92400E;">🎯</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Target Engine</h3>
-                        <span class="clay-badge badge-warning">Label Alignment</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    Computes forward outcomes (forward returns, directional binary classifications, future volatility) while strictly preventing target leakage.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet')" title="Click to copy into console">uv run trade9 targets compute data/processed/nvda.parquet --features data/features/nvda_features.parquet</div>
-        </div>
-
-        <!-- 4. Model Layer -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #EDE9FE; color: #5B21B6;">🤖</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Model Layer</h3>
-                        <span class="clay-badge badge-primary">Time-Series AI</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    Strict chronological train/val/test splits with purge gaps. Supports LightGBM, XGBoost, Random Forest, and regularized Linear models.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models')" title="Click to copy into console">uv run trade9 models train data/targets/nvda_labeled.parquet --model lightgbm --target target_binary_up_5d --output-dir models</div>
-        </div>
-
-        <!-- 5. Risk Engine -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #FEE2E2; color: #991B1B;">🛡️</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Risk Engine</h3>
-                        <span class="clay-badge badge-warning">Zero Bypass</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    Enforces drawdown circuit breakers, position exposure caps, portfolio leverage limits, ATR sizing, and transparent decision records.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run pytest tests/test_risk.py')" title="Click to copy into console">uv run pytest tests/test_risk.py</div>
-        </div>
-
-        <!-- 6. Backtesting Simulator -->
-        <div class="clay-card subsystem-card">
-            <div>
-                <div class="subsystem-header">
-                    <div class="subsystem-icon" style="background: #E0F2FE; color: #075985;">📈</div>
-                    <div>
-                        <h3 style="font-size: 1.05rem; font-weight: 800;">Backtest Simulator</h3>
-                        <span class="clay-badge badge-primary">Frictions & Curves</span>
-                    </div>
-                </div>
-                <p class="subsystem-desc" style="margin-top: 10px;">
-                    Next-bar execution, realistic slippage, commission models, volume caps, 12 quantitative metrics, and rich HTML reporting.
-                </p>
-            </div>
-            <div class="subsystem-code" onclick="setCommand('uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports')" title="Click to copy into console">uv run trade9 backtest run data/processed/nvda.parquet --output-dir reports</div>
-        </div>
-
-    </div>
 
     <!-- Educational Disclaimer -->
     <div class="clay-card disclaimer-card">
@@ -1027,6 +922,46 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
 
         function clearTerminal() {
             document.getElementById('terminalOutput').textContent = '';
+        }
+
+        function copyTerminalOutput() {
+            const out = document.getElementById('terminalOutput');
+            const text = out.innerText || out.textContent;
+            if (!text || text.trim().length === 0) return;
+
+            const btn = document.getElementById('copyTermBtn');
+            const showSuccess = () => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.color = '#10B981';
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.color = '';
+                }, 2000);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(showSuccess).catch(() => fallbackCopy(text, showSuccess));
+            } else {
+                fallbackCopy(text, showSuccess);
+            }
+        }
+
+        function fallbackCopy(text, callback) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                if (callback) callback();
+            } catch (e) {
+                console.error('Fallback copy failed', e);
+            }
+            document.body.removeChild(ta);
         }
 
         // --- AI Research Assistant Client ---
