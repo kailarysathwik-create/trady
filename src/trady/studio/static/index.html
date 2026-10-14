@@ -680,6 +680,7 @@
                 <span class="ai-sugg-pill" onclick="sendAiPrompt('List the registered momentum and volatility features and their lookback windows.')">🧬 Review Features</span>
                 <span class="ai-sugg-pill" onclick="sendAiPrompt('Retrieve our latest trained model experiment results and evaluation metrics.')">🤖 Inspect Models</span>
                 <span class="ai-sugg-pill" onclick="sendAiPrompt('Summarize our backtest performance and trade logs.')">📈 Backtest Summary</span>
+                <span class="ai-sugg-pill" onclick="sendAiPrompt('Explain our latest quantitative research backtest report and risk metrics.')">🔬 Explain Report</span>
             </div>
 
             <div class="ai-input-bar">
@@ -693,8 +694,10 @@
     <div class="terminal-container">
         <div class="terminal-header">
             <h2 class="section-title">💻 Interactive PowerShell Console</h2>
-            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
-                Direct PowerShell environment &bull; Path locked
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="runPreset('uv run trade9 data download --symbol ^NSEI --start 2023-01-01 --end 2024-01-01 --preview')">🔍 Preview Data</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 pipeline run --symbol ^NSEI --start 2023-01-01 --end 2024-01-01 --model logistic_regression')">🚀 Run Full Research Pipeline</button>
+                <button class="preset-btn" onclick="runPreset('uv run trade9 data validate data/processed/nsei_1d.parquet')">✅ Validate Dataset</button>
             </div>
         </div>
 

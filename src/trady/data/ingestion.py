@@ -16,6 +16,19 @@ from trady.utils.logging import get_logger
 logger = get_logger("data.ingestion")
 
 
+BASKETS: dict[str, tuple[str, ...]] = {
+    "nifty50_top5": (
+        "^NSEI",
+        "RELIANCE.NS",
+        "TCS.NS",
+        "HDFCBANK.NS",
+        "INFY.NS",
+        "ICICIBANK.NS",
+    ),
+    "us_tech_top5": ("SPY", "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL"),
+}
+
+
 def _sanitize_symbol_slug(symbol: str) -> str:
     """Sanitize symbol string for filesystem paths (e.g. '^NSEI' -> 'nsei')."""
     cleaned = symbol.strip().lstrip("^").replace("/", "_").replace("\\", "_")
@@ -204,3 +217,65 @@ def download_and_ingest_market_data(
         ],
         "is_preview": preview_only,
     }
+
+
+def download_and_ingest_multiple_symbols(
+    symbols: list[str] | tuple[str, ...],
+    start_date: str | date | datetime | None = None,
+    end_date: str | date | datetime | None = None,
+    timeframe: str = "1d",
+    output_dir: Path | str | None = None,
+    raw_dir: Path | str | None = None,
+    overwrite: bool = False,
+    auto_adjust: bool = False,
+    preview_only: bool = False,
+    provider: MarketDataProvider | None = None,
+) -> list[dict[str, Any]]:
+    """Download and ingest multiple market data symbols sequentially.
+
+    Args:
+        symbols: Iterable of ticker symbols.
+        start_date: Start date for historical bars (YYYY-MM-DD).
+        end_date: End date for historical bars (YYYY-MM-DD).
+        timeframe: Bar interval (defaults to '1d').
+        output_dir: Directory for normalized Parquet files.
+        raw_dir: Directory for raw JSON responses.
+        overwrite: If False, raises error if files already exist.
+        auto_adjust: Whether to adjust OHLC prices for splits/dividends.
+        preview_only: If True, fetches & validates in-memory without saving.
+        provider: Provider instance (defaults to YahooFinanceProvider).
+
+    Returns:
+        List of ingestion result dictionaries.
+    """
+    results: list[dict[str, Any]] = []
+    for sym in symbols:
+        sym_clean = sym.strip()
+        if not sym_clean:
+            continue
+        try:
+            res = download_and_ingest_market_data(
+                symbol=sym_clean,
+                start_date=start_date,
+                end_date=end_date,
+                timeframe=timeframe,
+                output_dir=output_dir,
+                raw_dir=raw_dir,
+                overwrite=overwrite,
+                auto_adjust=auto_adjust,
+                preview_only=preview_only,
+                provider=provider,
+            )
+            results.append(res)
+        except Exception as e:
+            results.append(
+                {
+                    "status": "error",
+                    "symbol": sym_clean,
+                    "error": str(e),
+                    "record_count": 0,
+                    "start_time": None,
+                    "end_time": None,
+                }
+            )
+    return results

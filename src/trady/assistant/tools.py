@@ -5,6 +5,7 @@ datasets, feature registry, trained models, and backtest reports.
 No shell commands, file modifications, or real-money operations are permitted.
 """
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -268,20 +269,46 @@ def get_backtest_metrics(
             "reports": [],
         }
 
-    html_reports = list(reports_dir.glob("*.html"))
-    parquet_trades = list(reports_dir.glob("*_trades.parquet"))
+    # Check both root reports/ and nested reports/backtests/*/
+    all_html = set(reports_dir.glob("*.html")) | set(
+        reports_dir.glob("backtests/*/*.html")
+    )
+    html_reports = sorted(all_html, key=lambda p: p.stat().st_mtime, reverse=True)
+
+    all_trades = set(reports_dir.glob("*_trades.parquet")) | set(
+        reports_dir.glob("backtests/*/trades.parquet")
+    )
+    parquet_trades = list(all_trades)
 
     reports_info = []
     for r in html_reports:
         if report_name and report_name.lower() not in r.name.lower():
             continue
-        reports_info.append(
-            {
-                "report_file": r.name,
-                "size_bytes": r.stat().st_size,
-                "modified_at": r.stat().st_mtime,
-            }
-        )
+        rep_entry = {
+            "report_file": r.name,
+            "path": str(r.relative_to(root)),
+            "size_bytes": r.stat().st_size,
+            "modified_at": r.stat().st_mtime,
+        }
+        metrics_file = r.parent / "metrics.json"
+        if metrics_file.exists():
+            try:
+                with open(metrics_file, encoding="utf-8") as f:
+                    m_data = json.load(f)
+                rep_entry["metrics"] = {
+                    "total_return": m_data.get("total_return"),
+                    "annualized_return": m_data.get("annualized_return")
+                    or m_data.get("cagr"),
+                    "sharpe_ratio": m_data.get("sharpe_ratio"),
+                    "sortino_ratio": m_data.get("sortino_ratio"),
+                    "max_drawdown": m_data.get("max_drawdown"),
+                    "win_rate": m_data.get("win_rate"),
+                    "profit_factor": m_data.get("profit_factor"),
+                    "total_trades": m_data.get("total_trades"),
+                }
+            except Exception:
+                pass
+        reports_info.append(rep_entry)
 
     trade_logs = []
     for t in parquet_trades:

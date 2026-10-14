@@ -72,6 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     from trady.data.cli import add_data_subparsers
     from trady.features.cli import add_feature_subparsers
     from trady.models.cli import add_model_subparsers
+    from trady.pipeline.cli import add_pipeline_subparsers
     from trady.targets.cli import add_target_subparsers
 
     add_data_subparsers(subparsers)
@@ -79,6 +80,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_target_subparsers(subparsers)
     add_model_subparsers(subparsers)
     add_backtest_subparsers(subparsers)
+    add_pipeline_subparsers(subparsers)
     add_assistant_subparsers(subparsers)
 
     studio_parser = subparsers.add_parser(
@@ -334,6 +336,11 @@ def main(argv: list[str] | None = None) -> NoReturn:
         from trady.backtesting.cli import handle_backtest_command
 
         exit_code = handle_backtest_command(args)
+        sys.exit(exit_code)
+    elif args.command == "pipeline":
+        from trady.pipeline.cli import handle_pipeline_command
+
+        exit_code = handle_pipeline_command(args)
         sys.exit(exit_code)
     elif args.command == "assistant":
         from trady.assistant.cli import handle_assistant_command

@@ -144,10 +144,15 @@ trady assistant chat
 # Real historical market data download (Yahoo Finance)
 trady data download --symbol ^NSEI --start 2023-01-01 --end 2024-01-01 --preview
 trady data download --symbol ^NSEI --start 2023-01-01 --end 2024-01-01
+trady data download --basket nifty50_top5 --start 2023-01-01 --end 2024-01-01
 
 # Inspect and validate ingested dataset
 trady data inspect data/processed/nsei_1d.parquet
 trady data validate data/processed/nsei_1d.parquet
+
+# End-to-end Quantitative Research Pipeline
+trady pipeline run --symbol ^NSEI --start 2023-01-01 --end 2024-01-01 --model logistic_regression
+trady pipeline run --dataset data/processed/nsei_1d.parquet --model random_forest
 ```
 
 ---

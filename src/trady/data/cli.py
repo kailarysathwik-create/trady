@@ -40,7 +40,20 @@ def add_data_subparsers(
         "-s",
         type=str,
         default="^NSEI",
-        help="Ticker symbol to download (default: ^NSEI, e.g. SPY, AAPL)",
+        help="Ticker symbol(s) to download (default: ^NSEI, can be comma-separated)",
+    )
+    dl_p.add_argument(
+        "--symbols",
+        nargs="+",
+        default=None,
+        help="Multiple ticker symbols to download in batch",
+    )
+    dl_p.add_argument(
+        "--basket",
+        type=str,
+        default=None,
+        choices=["nifty50_top5", "us_tech_top5"],
+        help="Predefined ticker basket to download in batch",
     )
     dl_p.add_argument(
         "--start",
@@ -207,12 +220,30 @@ def handle_data_command(args: argparse.Namespace) -> int:
         return 0
 
     if cmd == "download":
-        from trady.data.ingestion import download_and_ingest_market_data
+        from trady.data.ingestion import BASKETS, download_and_ingest_market_data
+
+        # Determine symbols to download
+        if getattr(args, "basket", None):
+            symbols = list(BASKETS.get(args.basket, ()))
+            if not symbols:
+                print(f"[ERROR] Unknown basket: {args.basket}")
+                return 1
+            sym_list_str = ", ".join(symbols)
+            print(
+                f"Loaded basket '{args.basket}' with {len(symbols)} symbols: "
+                f"{sym_list_str}"
+            )
+        elif getattr(args, "symbols", None):
+            symbols = args.symbols
+        elif args.symbol and "," in args.symbol:
+            symbols = [s.strip() for s in args.symbol.split(",") if s.strip()]
+        else:
+            symbols = [args.symbol or "^NSEI"]
 
         print("=" * 65)
         print(" TRADY HISTORICAL MARKET DATA INGESTION")
         print("=" * 65)
-        print(f" Symbol:       {args.symbol}")
+        print(f" Symbols:      {', '.join(symbols)}")
         print(f" Date Range:   {args.start or 'Earliest'} to {args.end or 'Latest'}")
         print(f" Timeframe:    {args.timeframe}")
         adj_str = "Auto-Adjusted" if args.auto_adjust else "Unadjusted"
@@ -221,49 +252,125 @@ def handle_data_command(args: argparse.Namespace) -> int:
         print(f" Mode:         {mode_str}")
         print("=" * 65)
 
-        try:
-            res = download_and_ingest_market_data(
-                symbol=args.symbol,
-                start_date=args.start,
-                end_date=args.end,
-                timeframe=args.timeframe,
-                custom_output=args.output,
-                custom_raw_output=args.raw_output,
-                overwrite=args.overwrite,
-                auto_adjust=args.auto_adjust,
-                preview_only=args.preview,
-            )
+        if len(symbols) == 1:
+            sym = symbols[0]
+            try:
+                res = download_and_ingest_market_data(
+                    symbol=sym,
+                    start_date=args.start,
+                    end_date=args.end,
+                    timeframe=args.timeframe,
+                    custom_output=args.output,
+                    custom_raw_output=args.raw_output,
+                    overwrite=args.overwrite,
+                    auto_adjust=args.auto_adjust,
+                    preview_only=args.preview,
+                )
 
-            print(f"\n[OK] Ingestion Successful: {res['record_count']} bars retrieved.")
-            print(f" Actual Period: {res['start_time']} to {res['end_time']}")
+                print(
+                    f"\n[OK] Ingestion Successful: "
+                    f"{res['record_count']} bars retrieved."
+                )
+                print(f" Actual Period: {res['start_time']} to {res['end_time']}")
 
-            if args.preview:
-                print("\nSample Preview (First 5 Bars):")
-                for bar in res["preview_records"]:
+                if args.preview:
+                    print("\nSample Preview (First 5 Bars):")
+                    for bar in res["preview_records"]:
+                        print(
+                            f"  {bar['timestamp'][:10]} | O: {bar['open']:>8.2f} | "
+                            f"H: {bar['high']:>8.2f} | L: {bar['low']:>8.2f} | "
+                            f"C: {bar['close']:>8.2f} | V: {bar['volume']:>11.0f}"
+                        )
                     print(
-                        f"  {bar['timestamp'][:10]} | O: {bar['open']:>8.2f} | "
-                        f"H: {bar['high']:>8.2f} | L: {bar['low']:>8.2f} | "
-                        f"C: {bar['close']:>8.2f} | V: {bar['volume']:>11.0f}"
+                        "\n[Notice]: Dry-run preview complete. "
+                        "No files written to disk."
                     )
-                print("\n[Notice]: Dry-run preview complete. No files written to disk.")
-            else:
-                print(f" Raw Archive:   {res['raw_file']}")
-                print(f" Normalized:    {res['processed_file']}")
-                print(f" Metadata:      {res['meta_file']}")
+                else:
+                    print(f" Raw Archive:   {res['raw_file']}")
+                    print(f" Normalized:    {res['processed_file']}")
+                    print(f" Metadata:      {res['meta_file']}")
 
-            val = res["validation"]
-            if val.warnings:
-                print(f"\nValidation Notice: {len(val.warnings)} warning(s) detected:")
-                for w in val.warnings[:5]:
-                    print(f"  - [{w.code}]: {w.message}")
+                val = res["validation"]
+                if val.warnings:
+                    print(
+                        f"\nValidation Notice: {len(val.warnings)} warning(s) detected:"
+                    )
+                    for w in val.warnings[:5]:
+                        print(f"  - [{w.code}]: {w.message}")
 
-            return 0
-        except FileExistsError as fe:
-            print(f"\n[ERROR] Overwrite Protection: {fe}")
-            return 1
-        except Exception as exc:
-            print(f"\n[ERROR] Ingestion Failed: {exc}")
-            return 1
+                return 0
+            except FileExistsError as fe:
+                print(f"\n[ERROR] Overwrite Protection: {fe}")
+                return 1
+            except Exception as exc:
+                print(f"\n[ERROR] Ingestion Failed for {sym}: {exc}")
+                return 1
+
+        # Multi-symbol batch execution
+        success_count = 0
+        summary_rows: list[dict[str, Any]] = []
+
+        for sym in symbols:
+            print(f"\n---> Fetching {sym}...")
+            try:
+                res = download_and_ingest_market_data(
+                    symbol=sym,
+                    start_date=args.start,
+                    end_date=args.end,
+                    timeframe=args.timeframe,
+                    overwrite=args.overwrite,
+                    auto_adjust=args.auto_adjust,
+                    preview_only=args.preview,
+                )
+                success_count += 1
+                val_status = "VALID" if res["validation"].is_valid else "INVALID"
+                summary_rows.append(
+                    {
+                        "symbol": sym,
+                        "status": "OK",
+                        "records": res["record_count"],
+                        "period": f"{res['start_time'][:10]} -> {res['end_time'][:10]}",
+                        "validation": val_status,
+                        "file": res.get("processed_file", "in-memory"),
+                    }
+                )
+            except Exception as e:
+                summary_rows.append(
+                    {
+                        "symbol": sym,
+                        "status": "FAIL",
+                        "records": 0,
+                        "period": "N/A",
+                        "validation": "ERROR",
+                        "file": str(e),
+                    }
+                )
+
+        print("\n" + "=" * 80)
+        print(f" BATCH INGESTION SUMMARY: {success_count}/{len(symbols)} Succeeded")
+        print("=" * 80)
+        fmt = "{:<12} | {:<6} | {:<7} | {:<23} | {:<8} | {:<15}"
+        print(fmt.format("Symbol", "Status", "Bars", "Period", "Valid", "Target File"))
+        print("-" * 80)
+        for r in summary_rows:
+            f_display = (
+                Path(r["file"]).name
+                if r["file"] != "in-memory" and "\\" in str(r["file"])
+                else str(r["file"])[:15]
+            )
+            print(
+                fmt.format(
+                    r["symbol"],
+                    r["status"],
+                    r["records"],
+                    r["period"],
+                    r["validation"],
+                    f_display,
+                )
+            )
+        print("=" * 80)
+
+        return 0 if success_count == len(symbols) else 1
 
     elif cmd == "validate":
         target = Path(args.dataset)
