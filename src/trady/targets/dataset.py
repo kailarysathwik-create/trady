@@ -201,6 +201,41 @@ class ModelingDataset:
 
         return x_mat, y_vec, ts_arr, symbols
 
+    def get_valid_row_indices(self, target_name: str) -> np.ndarray:
+        """Return array of integer row indices in table where data is valid.
+
+        Used to align modeling partitions strictly with original table rows
+        without leakage.
+        """
+        if target_name not in self.target_names:
+            msg = (
+                f"Target '{target_name}' not found. "
+                f"Available targets: {self.target_names}"
+            )
+            raise KeyError(msg)
+
+        if not self.feature_names:
+            x_mat = np.empty((len(self.table), 0), dtype=np.float64)
+        else:
+            cols = [
+                self.table.column(f).to_numpy(zero_copy_only=False)
+                for f in self.feature_names
+            ]
+            x_mat = np.column_stack(cols).astype(np.float64)
+        y_vec = (
+            self.table.column(target_name)
+            .to_numpy(zero_copy_only=False)
+            .astype(np.float64)
+        )
+        valid_x = (
+            ~np.isnan(x_mat).any(axis=1)
+            if len(self.feature_names) > 0
+            else np.ones(len(self.table), dtype=bool)
+        )
+        valid_y = ~np.isnan(y_vec)
+        valid = valid_x & valid_y
+        return np.where(valid)[0]
+
     def save(
         self,
         output_path: str | Path,

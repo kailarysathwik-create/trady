@@ -800,7 +800,10 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             try {
                 const res = await fetch('/api/config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
                     body: JSON.stringify({ project_dir: inputVal })
                 });
                 const data = await res.json();
@@ -856,10 +859,18 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             try {
                 const res = await fetch('/api/terminal/run', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
                     body: JSON.stringify({ command: cmd })
                 });
                 const data = await res.json();
+                if (res.status === 401 || res.status === 403 || res.status === 409) {
+                    appendTerminalLine(`\n[Security / Runner Error]: ${data.error || 'Request rejected'}\n`);
+                    resetTerminalState();
+                    return;
+                }
                 currentJobId = data.job_id;
                 jobOffset = 0;
                 pollJobOutput();
@@ -900,7 +911,10 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             try {
                 await fetch('/api/terminal/kill', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
                     body: JSON.stringify({ job_id: currentJobId })
                 });
                 appendTerminalLine(`\n[Terminated by user]\n`);

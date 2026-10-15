@@ -25,6 +25,7 @@ class WalkForwardConfig:
     test_size_bars: int | None = None
     window_type: str = "expanding"  # "expanding" or "rolling"
     min_train_bars: int = 50
+    purge_gap: int = 5  # Purge gap to prevent forward-looking label leakage into test
     backtest_config: BacktestConfig = BacktestConfig()
 
     def __post_init__(self) -> None:
@@ -34,6 +35,8 @@ class WalkForwardConfig:
             raise ValueError("window_type must be 'expanding' or 'rolling'.")
         if self.min_train_bars < 10:
             raise ValueError("min_train_bars must be at least 10.")
+        if self.purge_gap < 0:
+            raise ValueError("purge_gap cannot be negative.")
 
 
 @dataclass
@@ -47,6 +50,7 @@ class WalkForwardFoldResult:
     test_end: Any
     train_bars: int
     test_bars: int
+    purge_gap: int
     metrics: BacktestMetrics
     result: BacktestResult
 
@@ -70,6 +74,7 @@ class WalkForwardResult:
                 {
                     "fold": f.fold_idx,
                     "train_bars": f.train_bars,
+                    "purge_gap": f.purge_gap,
                     "test_bars": f.test_bars,
                     "test_start": str(f.test_start),
                     "test_end": str(f.test_end),
@@ -88,6 +93,7 @@ class WalkForwardResult:
             {
                 "fold": "OVERALL",
                 "train_bars": sum(f.train_bars for f in self.folds),
+                "purge_gap": self.config.purge_gap,
                 "test_bars": sum(f.test_bars for f in self.folds),
                 "test_start": str(self.folds[0].test_start) if self.folds else "",
                 "test_end": str(self.folds[-1].test_end) if self.folds else "",
@@ -113,19 +119,32 @@ class WalkForwardEvaluator:
         self,
         total_bars: int,
     ) -> list[tuple[int, int, int, int]]:
-        """Compute (train_start, train_end, test_start, test_end) bar indices."""
+        """Compute (train_start, train_end, test_start, test_end) bar indices.
+
+        Temporal Indexing Invariant:
+            train_start <= train_end < test_start < test_end
+
+        Purge Gap Invariant:
+            train_end = test_start - purge_gap.
+            The interval [train_end, test_start) is completely purged from
+            training to ensure forward target horizons (e.g. 5-day return) do
+            not incorporate test period prices into the training set.
+        """
         n_folds = self.config.n_folds
         min_train = self.config.min_train_bars
+        purge_gap = self.config.purge_gap
 
-        if total_bars <= min_train:
+        min_required = min_train + purge_gap + 10
+        if total_bars < min_required:
             raise ValueError(
-                f"total_bars ({total_bars}) must exceed min_train_bars ({min_train})."
+                f"total_bars ({total_bars}) must be at least {min_required} "
+                f"(min_train={min_train} + purge_gap={purge_gap} + 10 test bars)."
             )
 
         if self.config.test_size_bars is not None:
             test_size = self.config.test_size_bars
         else:
-            avail_for_test = total_bars - min_train
+            avail_for_test = total_bars - min_train - purge_gap
             test_size = max(10, avail_for_test // n_folds)
 
         if self.config.train_size_bars is not None:
@@ -137,14 +156,14 @@ class WalkForwardEvaluator:
         for k in range(n_folds):
             test_end = total_bars - (n_folds - 1 - k) * test_size
             test_start = test_end - test_size
-            if test_start < min_train:
+            if test_start < (min_train + purge_gap):
                 continue
 
+            # Purge gap separates train_end from test_start
+            train_end = test_start - purge_gap
             if self.config.window_type == "expanding":
                 train_start = 0
-                train_end = test_start
             else:  # rolling
-                train_end = test_start
                 train_start = max(0, train_end - train_size)
 
             if (train_end - train_start) >= min_train and (test_end - test_start) > 0:
@@ -153,7 +172,7 @@ class WalkForwardEvaluator:
         if not windows:
             raise ValueError(
                 f"Could not generate walk-forward windows for total_bars={total_bars}, "
-                f"min_train={min_train}, n_folds={n_folds}."
+                f"min_train={min_train}, purge_gap={purge_gap}, n_folds={n_folds}."
             )
 
         return windows
@@ -203,11 +222,22 @@ class WalkForwardEvaluator:
                 target_name=target_name,
             )
 
-            # Generate OOS test predictions
-            x_test = test_df[list(feature_names)].to_numpy(dtype=np.float64)
-            # If any NaN in test features, fill with 0.0 or forward fill for safety
-            if np.isnan(x_test).any():
-                x_test = np.nan_to_num(x_test, nan=0.0)
+            # Generate OOS test predictions with causal preprocessing
+            # Learn missing-value imputation strictly from training fold medians
+            train_medians = (
+                np.nanmedian(x_train, axis=0)
+                if len(x_train) > 0
+                else np.zeros(len(feature_names))
+            )
+            x_test_df = test_df[list(feature_names)].copy().ffill()
+            for col_idx, col in enumerate(feature_names):
+                fill_val = (
+                    train_medians[col_idx]
+                    if not np.isnan(train_medians[col_idx])
+                    else 0.0
+                )
+                x_test_df[col] = x_test_df[col].fillna(fill_val)
+            x_test = x_test_df.to_numpy(dtype=np.float64)
 
             if task_type == "classification":
                 pred_test = model.predict_proba(x_test)[:, 1]
@@ -260,6 +290,7 @@ class WalkForwardEvaluator:
                 test_end=test_df.iloc[-1]["timestamp"],
                 train_bars=len(train_df),
                 test_bars=len(test_df),
+                purge_gap=self.config.purge_gap,
                 metrics=sim_res.metrics,
                 result=sim_res,
             )

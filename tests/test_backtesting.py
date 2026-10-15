@@ -450,3 +450,39 @@ def test_walk_forward_evaluation() -> None:
     summary = wf_result.summary_table()
     assert len(summary) >= 3  # Folds + OVERALL
     assert "total_return" in summary.columns
+
+
+def test_walk_forward_purge_gap_leakage_prevention() -> None:
+    """Purge gap invariant: train_end = test_start - purge_gap prevents overlap."""
+    wf_config = WalkForwardConfig(
+        n_folds=3,
+        min_train_bars=40,
+        purge_gap=7,
+        window_type="expanding",
+    )
+    evaluator = WalkForwardEvaluator(config=wf_config)
+    windows = evaluator.generate_windows(total_bars=150)
+
+    assert len(windows) >= 2
+    for train_start, train_end, test_start, test_end in windows:
+        # Invariant 1: train_end must strictly equal test_start - purge_gap
+        assert test_start - train_end == 7
+        assert train_end - train_start >= 40
+        assert test_end > test_start
+
+    # Invalid purge gap raises ValueError
+    with pytest.raises(ValueError, match="purge_gap cannot be negative"):
+        WalkForwardConfig(purge_gap=-1)
+
+
+def test_walk_forward_insufficient_bars_with_purge_gap_raises() -> None:
+    """WalkForwardEvaluator raises ValueError if bars are insufficient for purge_gap."""
+    wf_config = WalkForwardConfig(
+        n_folds=3,
+        min_train_bars=50,
+        purge_gap=20,
+    )
+    evaluator = WalkForwardEvaluator(config=wf_config)
+    # Total bars = 60 < 50 + 20 + 10 = 80
+    with pytest.raises(ValueError, match="total_bars.*must be at least 80"):
+        evaluator.generate_windows(total_bars=60)
