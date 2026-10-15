@@ -265,3 +265,111 @@ def test_studio_server_remote_bind_prevention() -> None:
     """Security check: Remote binding without allow_remote raises ValueError."""
     with pytest.raises(ValueError, match="SAFETY VIOLATION"):
         start_studio_server(host="0.0.0.0", port=8998, allow_remote=False)
+
+
+def test_studio_api_market_endpoints(studio_server: str) -> None:
+    """Verify universe, quote, and candle endpoints."""
+    # 1. Universe
+    with urlopen(f"{studio_server}/api/market/universe?q=SPY") as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["count"] >= 1
+        assert data["universe"][0]["symbol"] == "SPY"
+
+    # 2. Quote
+    with urlopen(f"{studio_server}/api/market/quote?symbol=SPY") as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["symbol"] == "SPY"
+        assert data["currency"] == "USD"
+        assert data["last_price"] > 0
+
+    # 3. Candles
+    with urlopen(f"{studio_server}/api/market/candles?symbol=SPY") as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["symbol"] == "SPY"
+        assert data["count"] > 0
+        assert "close" in data["candles"][0]
+
+
+def test_studio_api_market_forecast(studio_server: str) -> None:
+    """Verify forecast endpoint returns directional forecast and risk rating."""
+    with urlopen(
+        f"{studio_server}/api/market/forecast?symbol=SPY&horizon=5&model=logistic_regression"
+    ) as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["symbol"] == "SPY"
+        assert "status" in data
+        assert "market_risk" in data
+
+
+def test_studio_api_portfolio_flow(studio_server: str) -> None:
+    """Verify portfolio summary, order submission, auth checks, and reset flow."""
+    # 1. Summary
+    with urlopen(f"{studio_server}/api/portfolio/summary") as resp:
+        assert resp.status == 200
+        data = json.loads(resp.read().decode("utf-8"))
+        assert "inr_wallet" in data
+        assert "usd_wallet" in data
+
+    # 2. Unauthorized order fails
+    order_payload = {
+        "symbol": "SPY",
+        "action": "BUY",
+        "order_type": "MARKET",
+        "quantity": 1.0,
+        "current_price": 400.0,
+    }
+    req_unauth = Request(
+        f"{studio_server}/api/portfolio/order",
+        data=json.dumps(order_payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with pytest.raises(urllib.error.HTTPError) as exc_info:
+        urlopen(req_unauth)
+    assert exc_info.value.code == 401
+
+    # 3. Authorized order succeeds
+    req_auth = Request(
+        f"{studio_server}/api/portfolio/order",
+        data=json.dumps(order_payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "X-Studio-Token": GLOBAL_CONTEXT.auth_token,
+        },
+    )
+    with urlopen(req_auth) as resp:
+        assert resp.status == 200
+        order_res = json.loads(resp.read().decode("utf-8"))
+        assert order_res["success"] is True
+        assert order_res["order"]["symbol"] == "SPY"
+
+    # 4. Reset requires confirmation
+    reset_fail = Request(
+        f"{studio_server}/api/portfolio/reset",
+        data=json.dumps({"confirmation": False}).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "X-Studio-Token": GLOBAL_CONTEXT.auth_token,
+        },
+    )
+    with pytest.raises(urllib.error.HTTPError) as exc_info:
+        urlopen(reset_fail)
+    assert exc_info.value.code == 400
+
+    # 5. Reset succeeds with confirmation
+    reset_ok = Request(
+        f"{studio_server}/api/portfolio/reset",
+        data=json.dumps({"confirmation": True}).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "X-Studio-Token": GLOBAL_CONTEXT.auth_token,
+        },
+    )
+    with urlopen(reset_ok) as resp:
+        assert resp.status == 200
+        reset_res = json.loads(resp.read().decode("utf-8"))
+        assert reset_res["success"] is True
+        assert reset_res["usd_wallet"]["cash_balance"] == 10000.0

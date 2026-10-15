@@ -272,6 +272,21 @@ class StudioContext:
         self.require_auth: bool = True
         self.load_config()
 
+    def _init_services(self) -> None:
+        """Initialize or reload portfolio and market intelligence services."""
+        from trady.market.forecasting import RiskProbabilityEngine
+        from trady.market.provider import MarketQuoteService
+        from trady.portfolio.simulator import PaperExchangeSimulator
+        from trady.portfolio.storage import PortfolioStorage
+        from trady.portfolio.wallet import WalletManager
+
+        paper_file = self.project_dir / "data" / "paper" / "portfolio.json"
+        self.portfolio_storage = PortfolioStorage(paper_file)
+        self.wallet_manager = WalletManager(storage=self.portfolio_storage)
+        self.simulator = PaperExchangeSimulator(wallet_manager=self.wallet_manager)
+        self.quote_service = MarketQuoteService(cache_ttl_seconds=60)
+        self.risk_engine = RiskProbabilityEngine(quote_service=self.quote_service)
+
     def load_config(self) -> None:
         cfg_path = self.project_dir / CONFIG_FILE
         if cfg_path.exists():
@@ -283,11 +298,13 @@ class StudioContext:
                         self.project_dir = Path(saved_dir).resolve()
             except Exception:
                 pass
+        self._init_services()
 
     def save_config(self, new_dir: Path) -> None:
         if not self.validate_workspace_path(new_dir):
             raise ValueError(f"Invalid or unauthorized directory: {new_dir}")
         self.project_dir = new_dir.resolve()
+        self._init_services()
         cfg_path = self.project_dir / CONFIG_FILE
         try:
             with open(cfg_path, "w", encoding="utf-8") as f:
@@ -447,6 +464,16 @@ class StudioHandler(BaseHTTPRequestHandler):
             self._handle_get_artifacts()
         elif path == "/api/assistant/status":
             self._handle_get_assistant_status()
+        elif path == "/api/market/universe":
+            self._handle_get_market_universe(query)
+        elif path == "/api/market/quote":
+            self._handle_get_market_quote(query)
+        elif path == "/api/market/candles":
+            self._handle_get_market_candles(query)
+        elif path == "/api/market/forecast":
+            self._handle_get_market_forecast(query)
+        elif path == "/api/portfolio/summary":
+            self._handle_get_portfolio_summary(query)
         else:
             self.send_error(404, "Not Found")
 
@@ -476,6 +503,12 @@ class StudioHandler(BaseHTTPRequestHandler):
             self._handle_terminal_kill(payload)
         elif path == "/api/assistant/chat":
             self._handle_post_assistant_chat(payload)
+        elif path == "/api/portfolio/order":
+            self._handle_post_portfolio_order(payload)
+        elif path == "/api/portfolio/cancel":
+            self._handle_post_portfolio_cancel(payload)
+        elif path == "/api/portfolio/reset":
+            self._handle_post_portfolio_reset(payload)
         else:
             self.send_error(404, "Not Found")
 
@@ -720,6 +753,253 @@ class StudioHandler(BaseHTTPRequestHandler):
                 "error": resp.error,
             },
         )
+
+    def _handle_get_market_universe(self, query: dict) -> None:
+        q = query.get("q", [""])[0]
+        from trady.market.universe import search_universe
+
+        items = search_universe(query=q)
+        self.send_json(
+            200,
+            {
+                "count": len(items),
+                "universe": items,
+            },
+        )
+
+    def _handle_get_market_quote(self, query: dict) -> None:
+        symbol = query.get("symbol", [""])[0]
+        if not symbol:
+            self.send_json(400, {"error": "Symbol query parameter is required."})
+            return
+        try:
+            quote = GLOBAL_CONTEXT.quote_service.get_quote(symbol)
+            self.send_json(200, quote)
+        except Exception as err:
+            self.send_json(
+                500, {"error": f"Failed to fetch quote for '{symbol}': {err}"}
+            )
+
+    def _handle_get_market_candles(self, query: dict) -> None:
+        symbol = query.get("symbol", [""])[0]
+        timeframe = query.get("timeframe", ["1d"])[0]
+        if not symbol:
+            self.send_json(400, {"error": "Symbol query parameter is required."})
+            return
+        try:
+            candles = GLOBAL_CONTEXT.quote_service.get_candles(
+                symbol, timeframe=timeframe
+            )
+            self.send_json(
+                200,
+                {
+                    "symbol": symbol,
+                    "timeframe": timeframe,
+                    "count": len(candles),
+                    "candles": candles,
+                },
+            )
+        except Exception as err:
+            self.send_json(
+                500, {"error": f"Failed to load candles for '{symbol}': {err}"}
+            )
+
+    def _handle_get_market_forecast(self, query: dict) -> None:
+        symbol = query.get("symbol", [""])[0]
+        horizon_val = query.get("horizon", ["5"])[0]
+        model_type = query.get("model", ["logistic_regression"])[0]
+        if not symbol:
+            self.send_json(400, {"error": "Symbol query parameter is required."})
+            return
+        try:
+            horizon = int(horizon_val)
+        except ValueError:
+            horizon = 5
+
+        try:
+            forecast = GLOBAL_CONTEXT.risk_engine.analyze_next_move(
+                symbol=symbol, horizon_days=horizon, model_type=model_type
+            )
+            self.send_json(200, forecast)
+        except Exception as err:
+            import traceback
+
+            traceback.print_exc()
+            self.send_json(
+                500, {"error": f"Forecast engine error for '{symbol}': {err}"}
+            )
+
+    def _handle_get_portfolio_summary(self, query: dict) -> None:
+        rate_param = query.get("usd_inr_rate", [None])[0]
+        usd_inr_rate: float | None = None
+        if rate_param is not None and rate_param != "":
+            try:
+                usd_inr_rate = float(rate_param)
+            except ValueError:
+                usd_inr_rate = None
+
+        wm = GLOBAL_CONTEXT.wallet_manager
+        sim = GLOBAL_CONTEXT.simulator
+
+        all_positions = list(wm.inr_wallet.positions.keys()) + list(
+            wm.usd_wallet.positions.keys()
+        )
+        prices = {}
+        for sym in all_positions:
+            try:
+                q = GLOBAL_CONTEXT.quote_service.get_quote(sym)
+                prices[sym] = float(q["last_price"])
+            except Exception:
+                pass
+        if prices:
+            wm.update_market_prices(prices)
+            sim.process_pending_limit_orders(prices)
+
+        consolidated = wm.get_consolidated_summary(usd_inr_rate=usd_inr_rate)
+        self.send_json(
+            200,
+            {
+                "inr_wallet": wm.inr_wallet.to_dict(),
+                "usd_wallet": wm.usd_wallet.to_dict(),
+                "consolidated": consolidated,
+                "active_currency": "INR / USD",
+            },
+        )
+
+    def _handle_post_portfolio_order(self, payload: dict) -> None:
+        if not self._is_authorized():
+            self.send_json(
+                401, {"error": "Unauthorized: valid session token required."}
+            )
+            return
+
+        symbol = payload.get("symbol", "").strip()
+        action_str = payload.get("action", "").upper().strip()
+        order_type_str = payload.get("order_type", "MARKET").upper().strip()
+        try:
+            quantity = float(payload.get("quantity", 0))
+        except (ValueError, TypeError):
+            self.send_json(400, {"error": "Invalid quantity provided."})
+            return
+
+        limit_price = payload.get("limit_price")
+        if limit_price is not None:
+            try:
+                limit_price = float(limit_price)
+            except (ValueError, TypeError):
+                self.send_json(400, {"error": "Invalid limit_price provided."})
+                return
+
+        current_price = payload.get("current_price")
+        if current_price is not None:
+            try:
+                current_price = float(current_price)
+            except (ValueError, TypeError):
+                current_price = None
+
+        if current_price is None:
+            try:
+                q = GLOBAL_CONTEXT.quote_service.get_quote(symbol)
+                current_price = float(q["last_price"])
+            except Exception:
+                current_price = None
+
+        forecast_metadata = payload.get("forecast_metadata")
+
+        from trady.portfolio.models import OrderAction, OrderType
+
+        try:
+            act = OrderAction(action_str)
+            otype = OrderType(order_type_str)
+            market_price = current_price or limit_price or 0.0
+            order = GLOBAL_CONTEXT.simulator.submit_order(
+                symbol=symbol,
+                action=act,
+                order_type=otype,
+                quantity=quantity,
+                current_market_price=market_price,
+                limit_price=limit_price,
+                forecast_metadata=forecast_metadata,
+            )
+            wallet = GLOBAL_CONTEXT.wallet_manager.get_wallet_for_symbol(symbol)
+            self.send_json(
+                200,
+                {
+                    "success": True,
+                    "order": order.to_dict(),
+                    "wallet": wallet.to_dict(),
+                },
+            )
+        except (ValueError, KeyError) as err:
+            self.send_json(400, {"error": str(err)})
+        except Exception as err:
+            import traceback
+
+            traceback.print_exc()
+            self.send_json(500, {"error": f"Order submission failed: {err}"})
+
+    def _handle_post_portfolio_cancel(self, payload: dict) -> None:
+        if not self._is_authorized():
+            self.send_json(
+                401, {"error": "Unauthorized: valid session token required."}
+            )
+            return
+
+        order_id = payload.get("order_id", "").strip()
+        if not order_id:
+            self.send_json(400, {"error": "order_id is required."})
+            return
+
+        try:
+            order = GLOBAL_CONTEXT.simulator.cancel_order(order_id=order_id)
+            wallet = GLOBAL_CONTEXT.wallet_manager.get_wallet_for_symbol(order.symbol)
+            self.send_json(
+                200,
+                {
+                    "success": True,
+                    "order": order.to_dict(),
+                    "wallet": wallet.to_dict(),
+                },
+            )
+        except (ValueError, KeyError) as err:
+            self.send_json(400, {"error": str(err)})
+        except Exception as err:
+            self.send_json(500, {"error": f"Cancel order failed: {err}"})
+
+    def _handle_post_portfolio_reset(self, payload: dict) -> None:
+        if not self._is_authorized():
+            self.send_json(
+                401, {"error": "Unauthorized: valid session token required."}
+            )
+            return
+
+        confirmation = bool(payload.get("confirmation", False))
+        starting_inr = float(payload.get("starting_inr", 100000.0))
+        starting_usd = float(payload.get("starting_usd", 10000.0))
+
+        try:
+            wm = GLOBAL_CONTEXT.wallet_manager
+            wm.reset_portfolio(
+                confirmation=confirmation,
+                new_inr_balance=starting_inr,
+                new_usd_balance=starting_usd,
+            )
+            self.send_json(
+                200,
+                {
+                    "success": True,
+                    "message": (
+                        "Portfolio wallets and simulated trade records reset "
+                        "successfully."
+                    ),
+                    "inr_wallet": wm.inr_wallet.to_dict(),
+                    "usd_wallet": wm.usd_wallet.to_dict(),
+                },
+            )
+        except ValueError as err:
+            self.send_json(400, {"error": str(err)})
+        except Exception as err:
+            self.send_json(500, {"error": f"Reset failed: {err}"})
 
 
 def start_studio_server(

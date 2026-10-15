@@ -6,14 +6,14 @@
     <title>TRADE9 Studio &bull; Claymorphic Quantitative Control Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-canvas: #EEF2F7;
             --clay-surface: #F8FAFD;
             --clay-shadow-dark: rgba(160, 175, 195, 0.45);
             --clay-shadow-light: rgba(255, 255, 255, 0.95);
-            --clay-border: rgba(255, 255, 255, 0.8);
+            --clay-border: rgba(255, 255, 255, 0.85);
             
             --primary: #4F46E5;
             --primary-light: #EEF2FF;
@@ -22,7 +22,9 @@
             --success: #10B981;
             --success-light: #ECFDF5;
             --warning: #F59E0B;
+            --warning-light: #FFFBEB;
             --danger: #EF4444;
+            --danger-light: #FEF2F2;
             
             --text-main: #1E293B;
             --text-muted: #64748B;
@@ -48,7 +50,7 @@
             overflow-x: hidden;
         }
 
-        /* Claymorphism Base Card */
+        /* Claymorphism Base Cards */
         .clay-card {
             background: var(--clay-surface);
             border-radius: 24px;
@@ -98,8 +100,18 @@
             box-shadow: 6px 6px 16px var(--primary-shadow), -4px -4px 12px var(--clay-shadow-light);
         }
 
-        .clay-btn-primary:active {
-            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3);
+        .clay-btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 6px 6px 16px rgba(16, 185, 129, 0.35), -4px -4px 12px var(--clay-shadow-light);
+        }
+
+        .clay-btn-danger {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 6px 6px 16px rgba(239, 68, 68, 0.35), -4px -4px 12px var(--clay-shadow-light);
         }
 
         /* Badges & Pills */
@@ -118,6 +130,7 @@
         .badge-success { background: var(--success-light); color: #065F46; }
         .badge-primary { background: var(--primary-light); color: #3730A3; }
         .badge-warning { background: #FEF3C7; color: #92400E; }
+        .badge-danger { background: var(--danger-light); color: #991B1B; }
 
         /* App Header */
         header {
@@ -168,6 +181,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         .path-display {
@@ -221,6 +235,405 @@
             gap: 6px;
         }
 
+        /* Virtual Money & Paper Exchange Styles */
+        .exchange-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .wallets-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .wallets-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wallet-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding-bottom: 12px;
+        }
+
+        .wallet-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wallet-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+        }
+
+        .metric-cell {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .metric-cell-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-cell-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+        }
+
+        .consolidated-bar {
+            background: #EEF2FF;
+            border: 1px solid #C7D2FE;
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.85rem;
+        }
+
+        /* Trading & Market Hub Grid */
+        .market-hub-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .market-hub-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Watchlist & Search */
+        .watchlist-container {
+            margin-bottom: 16px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .ticker-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ticker-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: var(--clay-surface);
+            border: 1px solid var(--clay-border);
+            box-shadow: 3px 3px 8px var(--clay-shadow-dark), -3px -3px 8px var(--clay-shadow-light);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ticker-pill:hover, .ticker-pill.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Quote Banner */
+        .quote-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #FFFFFF;
+            border-radius: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .quote-main {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .quote-sym {
+            font-size: 1.45rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quote-price {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quote-change {
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Candlestick Chart Box */
+        .chart-box {
+            background: #0F172A;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.5), 8px 8px 20px var(--clay-shadow-dark);
+            padding: 16px;
+            color: #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 440px;
+        }
+
+        .chart-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 14px;
+            font-size: 0.74rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            min-height: 360px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Order Ticket */
+        .order-ticket {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .action-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 10px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .action-buy {
+            background: var(--success-light);
+            color: #065F46;
+            border-color: #A7F3D0;
+        }
+
+        .action-buy.selected {
+            background: var(--success);
+            color: #FFFFFF;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .action-sell {
+            background: var(--danger-light);
+            color: #991B1B;
+            border-color: #FECACA;
+        }
+
+        .action-sell.selected {
+            background: var(--danger);
+            color: #FFFFFF;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .order-preview-box {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .preview-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+        }
+
+        .preview-row.highlight {
+            font-weight: 800;
+            color: var(--text-main);
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            padding-top: 6px;
+            margin-top: 4px;
+        }
+
+        /* AI Risk & Probability Forecasting */
+        .ai-forecast-container {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #F8FAFD, #EEF2FF);
+            border: 1px solid #C7D2FE;
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .forecast-meter-wrapper {
+            margin: 14px 0;
+        }
+
+        .forecast-meter {
+            height: 18px;
+            background: #E2E8F0;
+            border-radius: 9999px;
+            overflow: hidden;
+            display: flex;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .meter-bullish {
+            background: linear-gradient(90deg, #10B981, #059669);
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        .meter-bearish {
+            background: linear-gradient(90deg, #EF4444, #DC2626);
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-top: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .risk-rating-pill {
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .risk-low { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+        .risk-mod { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+        .risk-high { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+        .risk-extreme { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+        .risk-unknown { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
+
+        /* Tables */
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .positions-table th {
+            text-align: left;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .positions-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .positions-table tr:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
         /* Terminal Window */
         .terminal-container {
             margin-bottom: 24px;
@@ -270,7 +683,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 640px;
+            height: 520px;
         }
 
         .terminal-topbar {
@@ -341,144 +754,52 @@
             font-size: 0.88rem;
         }
 
-        /* Knowledge Subsystems Grid */
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .knowledge-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .subsystem-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .subsystem-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .subsystem-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 4px 4px 10px var(--clay-shadow-dark), -4px -4px 10px var(--clay-shadow-light);
-        }
-
-        .subsystem-desc {
-            font-size: 0.84rem;
-            color: var(--text-muted);
-            line-height: 1.45;
-        }
-
-        .subsystem-code {
-            background: rgba(0, 0, 0, 0.04);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.74rem;
-            color: #334155;
-            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            word-break: break-all;
-            transition: all 0.15s ease;
-        }
-
-        .subsystem-code:hover {
-            background: rgba(99, 102, 241, 0.08);
-            color: var(--primary);
-        }
-
-        /* AI Assistant Chat Panel */
-        .assistant-container {
-            margin-bottom: 26px;
-        }
-
+        /* AI Assistant Card */
         .ai-card {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            padding: 20px;
+            margin-bottom: 24px;
         }
 
         .ai-chat-history {
+            max-height: 320px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 380px;
-            overflow-y: auto;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.02);
-            border-radius: 16px;
-            box-shadow: inset 2px 2px 5px var(--clay-shadow-dark), inset -2px -2px 5px var(--clay-shadow-light);
+            padding: 8px 4px;
         }
 
         .ai-msg {
-            max-width: 85%;
-            padding: 12px 16px;
             border-radius: 16px;
+            padding: 12px 16px;
             font-size: 0.88rem;
             line-height: 1.5;
-            word-wrap: break-word;
         }
 
         .ai-msg-user {
+            background: #EEF2FF;
+            border: 1px solid #C7D2FE;
             align-self: flex-end;
-            background: linear-gradient(135deg, #6366F1, #4F46E5);
-            color: #FFFFFF;
-            border-bottom-right-radius: 4px;
-            box-shadow: 4px 4px 10px rgba(99, 102, 241, 0.25);
+            max-width: 80%;
         }
 
         .ai-msg-bot {
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
             align-self: flex-start;
-            background: var(--clay-surface);
-            color: var(--text-main);
-            border-bottom-left-radius: 4px;
-            border: 1px solid var(--clay-border);
-            box-shadow: 3px 3px 8px var(--clay-shadow-dark), -3px -3px 8px var(--clay-shadow-light);
+            max-width: 85%;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.03);
         }
 
         .ai-msg-header {
             font-size: 0.74rem;
             font-weight: 700;
-            margin-bottom: 6px;
-            opacity: 0.85;
+            color: var(--text-muted);
+            margin-bottom: 4px;
             display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .ai-tool-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(16, 185, 129, 0.12);
-            color: #065F46;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            margin: 4px 0;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            justify-content: space-between;
         }
 
         .ai-suggestions {
@@ -488,15 +809,15 @@
         }
 
         .ai-sugg-pill {
-            font-size: 0.76rem;
+            font-size: 0.75rem;
+            font-weight: 600;
             padding: 5px 12px;
-            border-radius: 9999px;
-            background: var(--clay-surface);
+            border-radius: 12px;
+            background: #FFFFFF;
             border: 1px solid var(--clay-border);
-            color: var(--text-muted);
+            box-shadow: 2px 2px 6px var(--clay-shadow-dark);
             cursor: pointer;
-            box-shadow: 2px 2px 5px var(--clay-shadow-dark), -2px -2px 5px var(--clay-shadow-light);
-            transition: all 0.15s ease;
+            transition: all 0.15s;
         }
 
         .ai-sugg-pill:hover {
@@ -510,14 +831,14 @@
             align-items: center;
         }
 
-        /* Modal Overlay */
+        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.55);
             backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
@@ -564,7 +885,6 @@
             border-color: var(--primary);
         }
 
-        /* Disclaimer footer */
         .disclaimer-card {
             font-size: 0.78rem;
             color: var(--text-muted);
@@ -585,11 +905,28 @@
             </p>
             <div class="input-group">
                 <label for="dirInput">PROJECT ROOT DIRECTORY PATH</label>
-                <input id="dirInput" class="clay-input" type="text" placeholder="e.g. C:\Projects\trady">
+                <input id="dirInput" class="clay-input" type="text" placeholder="e.g. S:\Trady">
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="clay-btn" onclick="closeModal()">Cancel</button>
                 <button class="clay-btn clay-btn-primary" onclick="saveWorkspaceDir()">🔒 Lock & Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Reset Confirmation Modal -->
+    <div id="resetModal" class="modal-overlay hidden">
+        <div class="clay-card modal-card">
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #DC2626; margin-bottom: 8px;">⚠️ Reset Virtual Portfolios</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                This action will reset your virtual INR and USD paper balances back to default amounts (<strong>₹100,000</strong> and <strong>$10,000</strong>), close all open positions, and clear simulated order history.
+            </p>
+            <div style="margin: 16px 0; background: #FEF2F2; border: 1px solid #FECACA; padding: 12px; border-radius: 12px; font-size: 0.82rem; color: #991B1B;">
+                <strong>Confirmation Required:</strong> This simulation reset cannot be undone.
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="clay-btn" onclick="closeResetModal()">Cancel</button>
+                <button class="clay-btn clay-btn-danger" onclick="confirmResetPortfolio()">💥 Confirm Portfolio Reset</button>
             </div>
         </div>
     </div>
@@ -600,7 +937,7 @@
             <div class="brand-logo">T9</div>
             <div class="brand-text">
                 <h1>TRADE9 Studio <span class="clay-badge badge-success">● Ready</span></h1>
-                <p>Quantitative Research &bull; Machine Learning &bull; Paper-Trading Control Center</p>
+                <p>Virtual Money &bull; Paper Exchange &bull; Market Intelligence &bull; AI Forecasting</p>
             </div>
         </div>
 
@@ -608,6 +945,9 @@
             <div class="path-display" id="activePath">Connecting...</div>
             <button class="clay-btn" onclick="openModal()" title="Edit or lock project directory">
                 ✏️ Workspace
+            </button>
+            <button class="clay-btn" onclick="openResetModal()" title="Reset virtual portfolios" style="color: #DC2626;">
+                🔄 Reset Portfolios
             </button>
             <button class="clay-btn clay-btn-primary" onclick="runPreset('uv run trade9 health')">
                 ⚡ Health
@@ -649,6 +989,351 @@
             </div>
         </div>
     </div>
+
+    <!-- ========================================================================= -->
+    <!-- TRADY VIRTUAL MONEY & PAPER EXCHANGE -->
+    <!-- ========================================================================= -->
+    <section class="exchange-section">
+        <div class="section-header-row">
+            <h2 class="section-title">
+                <span>💳 Virtual Money & Paper Exchange Hub</span>
+                <span class="clay-badge badge-success">Simulated Fictional Balances</span>
+            </h2>
+            <button class="preset-btn" onclick="fetchPortfolioSummary()" style="padding: 6px 14px;">
+                🔄 Refresh Ledger
+            </button>
+        </div>
+
+        <!-- Dual Wallets Container -->
+        <div class="wallets-container">
+            <!-- INR Wallet Card -->
+            <div class="clay-card wallet-card">
+                <div class="wallet-header">
+                    <div class="wallet-title">
+                        <span>🇮🇳 INR Virtual Wallet</span>
+                        <span class="clay-badge badge-primary">NSE / BSE</span>
+                    </div>
+                    <span id="inrEquityBadge" class="stat-value" style="font-size: 1.25rem; color: #1E293B;">₹100,000.00</span>
+                </div>
+
+                <div class="wallet-metrics-grid">
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Available Cash</div>
+                        <div class="metric-cell-val" id="inrAvailCash">₹100,000.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Reserved (Limits)</div>
+                        <div class="metric-cell-val" id="inrReservedCash">₹0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Positions Value</div>
+                        <div class="metric-cell-val" id="inrMktVal">₹0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Unrealized P&L</div>
+                        <div class="metric-cell-val" id="inrUnrealizedPnl">₹0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Realized P&L</div>
+                        <div class="metric-cell-val" id="inrRealizedPnl">₹0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Drawdown</div>
+                        <div class="metric-cell-val" id="inrDrawdown">0.0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USD Wallet Card -->
+            <div class="clay-card wallet-card">
+                <div class="wallet-header">
+                    <div class="wallet-title">
+                        <span>🇺🇸 USD Virtual Wallet</span>
+                        <span class="clay-badge badge-primary">US Equities / ETFs</span>
+                    </div>
+                    <span id="usdEquityBadge" class="stat-value" style="font-size: 1.25rem; color: #1E293B;">$10,000.00</span>
+                </div>
+
+                <div class="wallet-metrics-grid">
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Available Cash</div>
+                        <div class="metric-cell-val" id="usdAvailCash">$10,000.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Reserved (Limits)</div>
+                        <div class="metric-cell-val" id="usdReservedCash">$0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Positions Value</div>
+                        <div class="metric-cell-val" id="usdMktVal">$0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Unrealized P&L</div>
+                        <div class="metric-cell-val" id="usdUnrealizedPnl">$0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Realized P&L</div>
+                        <div class="metric-cell-val" id="usdRealizedPnl">$0.00</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Drawdown</div>
+                        <div class="metric-cell-val" id="usdDrawdown">0.0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consolidated Valuation Strip -->
+        <div class="consolidated-bar" id="consolidatedBar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>🌐 <strong>Consolidated Valuation:</strong></span>
+                <span id="consolValuationText">Independent INR & USD ledgers preserved. Cross-currency rate: 1 USD = 83.50 INR.</span>
+            </div>
+            <span class="clay-badge badge-primary" id="consolEquityPill">Consolidated: ₹935,000.00</span>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- REAL-TIME MARKET INTELLIGENCE & CHARTING & AI FORECASTING -->
+    <!-- ========================================================================= -->
+    <section class="exchange-section">
+        <div class="section-header-row">
+            <h2 class="section-title">
+                <span>📈 Real-Time Market Intelligence & AI Forecasting</span>
+            </h2>
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="analyzeNextMove()">🤖 ANALYZE NEXT MOVE</button>
+            </div>
+        </div>
+
+        <!-- Watchlist and Quick Ticker Selector -->
+        <div class="watchlist-container">
+            <div class="search-row">
+                <input id="symbolSearchInput" class="clay-input" type="text" placeholder="Search instrument (e.g. SPY, QQQ, AAPL, ^NSEI, RELIANCE.NS, TCS.NS)..." oninput="handleSymbolSearch(this.value)" style="max-width: 460px;">
+                <div class="ticker-pills">
+                    <span class="ticker-pill active" onclick="selectSymbol('SPY')">SPY</span>
+                    <span class="ticker-pill" onclick="selectSymbol('QQQ')">QQQ</span>
+                    <span class="ticker-pill" onclick="selectSymbol('AAPL')">AAPL</span>
+                    <span class="ticker-pill" onclick="selectSymbol('NVDA')">NVDA</span>
+                    <span class="ticker-pill" onclick="selectSymbol('^NSEI')">^NSEI (Nifty 50)</span>
+                    <span class="ticker-pill" onclick="selectSymbol('RELIANCE.NS')">RELIANCE</span>
+                    <span class="ticker-pill" onclick="selectSymbol('TCS.NS')">TCS</span>
+                    <span class="ticker-pill" onclick="selectSymbol('HDFCBANK.NS')">HDFCBANK</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Hub: Left Chart & AI, Right Order Ticket -->
+        <div class="market-hub-grid">
+            <!-- Left Column: Quote Banner + Interactive Chart + AI Probability Engine -->
+            <div>
+                <!-- Live Quote Banner -->
+                <div class="quote-banner">
+                    <div class="quote-main">
+                        <span class="quote-sym" id="quoteSymbol">SPY</span>
+                        <span class="quote-price" id="quotePrice">$427.48</span>
+                        <span class="quote-change" id="quoteChange" style="color: #10B981;">+1.24 (+0.29%)</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <span id="quoteDelayBadge" class="clay-badge badge-warning">Delayed (15m)</span>
+                        <span id="quoteCurrencyBadge" class="clay-badge badge-primary">USD</span>
+                        <span id="quoteTimeBadge" style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Just now</span>
+                    </div>
+                </div>
+
+                <!-- Candlestick Chart Box -->
+                <div class="chart-box">
+                    <div class="chart-toolbar">
+                        <div class="chart-legend">
+                            <span style="color: #10B981;">● Bullish</span>
+                            <span style="color: #EF4444;">● Bearish</span>
+                            <span style="color: #F59E0B;">─ SMA20</span>
+                            <span style="color: #38BDF8;">─ SMA50</span>
+                            <span style="color: #A855F7;">─ EMA20</span>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="preset-btn" onclick="changeTimeframe('1D')">1D</button>
+                            <button class="preset-btn" onclick="changeTimeframe('1W')">1W</button>
+                            <button class="preset-btn active" onclick="changeTimeframe('1M')">1M</button>
+                            <button class="preset-btn" onclick="changeTimeframe('3M')">3M</button>
+                            <button class="preset-btn" onclick="changeTimeframe('1Y')">1Y</button>
+                        </div>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="candleCanvas" width="800" height="380"></canvas>
+                    </div>
+                </div>
+
+                <!-- AI Probability and Forecasting Panel -->
+                <div class="ai-forecast-container" id="aiForecastBox">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.1rem; font-weight: 800;">🤖 AI Probability & Risk Engine</span>
+                            <span id="forecastRiskRatingPill" class="risk-rating-pill risk-mod">MODERATE RISK</span>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <select id="forecastHorizonSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
+                                <option value="5" selected>5-Day Horizon (Trained)</option>
+                                <option value="1">1-Day Horizon</option>
+                                <option value="20">20-Day Horizon</option>
+                            </select>
+                            <select id="forecastModelSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
+                                <option value="logistic_regression" selected>Logistic Regression</option>
+                                <option value="random_forest">Random Forest</option>
+                                <option value="xgboost">XGBoost</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="forecast-meter-wrapper">
+                        <div class="forecast-meter">
+                            <div class="meter-bullish" id="meterBullish" style="width: 58%;"></div>
+                            <div class="meter-bearish" id="meterBearish" style="width: 42%;"></div>
+                        </div>
+                        <div class="meter-labels">
+                            <span style="color: #059669;" id="probBullishText">Bullish Up: 58.0%</span>
+                            <span style="color: #DC2626;" id="probBearishText">Bearish Down: 42.0%</span>
+                        </div>
+                    </div>
+
+                    <div class="wallet-metrics-grid" style="margin-top: 12px;">
+                        <div class="metric-cell">
+                            <div class="metric-cell-label">Realized Vol (20d)</div>
+                            <div class="metric-cell-val" id="forecastVolVal">16.4%</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-cell-label">Adverse Move (95% VaR)</div>
+                            <div class="metric-cell-val" id="forecastVarVal" style="color: #DC2626;">-2.4%</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-cell-label">Brier Score</div>
+                            <div class="metric-cell-val" id="forecastBrierVal">0.241</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-cell-label">Model Calibration</div>
+                            <div class="metric-cell-val" id="forecastCalibVal" style="font-size: 0.85rem; color: var(--primary);">VALIDATED</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 12px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;" id="forecastLimitations">
+                        <strong>Limitations:</strong> Macro announcements or unexpected rate shifts can invalidate technical patterns. Simulation only.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Paper Order Ticket + Active Holdings -->
+            <div>
+                <!-- Paper Order Ticket -->
+                <div class="clay-card order-ticket">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
+                        <span>📝 Paper Order Ticket</span>
+                        <span class="clay-badge badge-primary" id="ticketCurrencyPill">USD</span>
+                    </h3>
+
+                    <!-- BUY / SELL Selector -->
+                    <div class="action-selector">
+                        <div class="action-btn action-buy selected" id="btnActionBuy" onclick="setOrderAction('BUY')">BUY</div>
+                        <div class="action-btn action-sell" id="btnActionSell" onclick="setOrderAction('SELL')">SELL</div>
+                    </div>
+
+                    <!-- Order Type Selector -->
+                    <div style="display: flex; gap: 8px;">
+                        <button class="preset-btn active" id="btnTypeMarket" onclick="setOrderType('MARKET')">Market Order</button>
+                        <button class="preset-btn" id="btnTypeLimit" onclick="setOrderType('LIMIT')">Limit Order</button>
+                    </div>
+
+                    <!-- Quantity Input -->
+                    <div class="input-group" style="margin: 6px 0;">
+                        <label for="orderQtyInput">ORDER QUANTITY (SHARES / UNITS)</label>
+                        <input id="orderQtyInput" class="clay-input" type="number" value="10" min="1" step="1" oninput="updateOrderPreview()">
+                    </div>
+
+                    <!-- Limit Price Input (Only for limit orders) -->
+                    <div class="input-group" id="limitPriceGroup" style="margin: 6px 0; display: none;">
+                        <label for="orderLimitPriceInput">LIMIT PRICE</label>
+                        <input id="orderLimitPriceInput" class="clay-input" type="number" step="0.01" oninput="updateOrderPreview()">
+                    </div>
+
+                    <!-- Cost & Friction Breakdown -->
+                    <div class="order-preview-box">
+                        <div class="preview-row">
+                            <span>Reference Price:</span>
+                            <span id="previewRefPrice" style="font-family: monospace;">$427.48</span>
+                        </div>
+                        <div class="preview-row">
+                            <span>Slippage Estimate (0.05%):</span>
+                            <span id="previewSlippage" style="font-family: monospace;">$2.14</span>
+                        </div>
+                        <div class="preview-row">
+                            <span>Simulated Broker Fee:</span>
+                            <span id="previewFee" style="font-family: monospace;">$1.43</span>
+                        </div>
+                        <div class="preview-row highlight">
+                            <span>Estimated Total Capital:</span>
+                            <span id="previewTotalCost" style="font-family: monospace;">$4,278.37</span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Order Button -->
+                    <button class="clay-btn clay-btn-success" id="btnSubmitOrder" style="justify-content: center; padding: 12px; font-size: 0.95rem;" onclick="submitPaperOrder()">
+                        🚀 Submit Paper Order
+                    </button>
+                </div>
+
+                <!-- Active Holdings Card -->
+                <div class="clay-card" style="margin-top: 20px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>💼 Open Holdings</span>
+                        <span class="clay-badge badge-success" id="holdingsCountBadge">0 Positions</span>
+                    </h3>
+                    <div style="max-height: 240px; overflow-y: auto;">
+                        <table class="positions-table" id="holdingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Qty</th>
+                                    <th>Avg Price</th>
+                                    <th>Unrealized P&L</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holdingsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No open positions yet. Place a paper order above.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pending Limit Orders Card -->
+                <div class="clay-card" style="margin-top: 20px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>⏳ Pending Limit Orders</span>
+                        <span class="clay-badge badge-warning" id="pendingCountBadge">0 Pending</span>
+                    </h3>
+                    <div style="max-height: 180px; overflow-y: auto;">
+                        <table class="positions-table" id="pendingTable">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Action</th>
+                                    <th>Limit</th>
+                                    <th>Reserved</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No pending limit orders.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- TRADY AI Quantitative Research Assistant -->
     <div class="assistant-container">
@@ -727,8 +1412,6 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
         </div>
     </div>
 
-
-
     <!-- Educational Disclaimer -->
     <div class="clay-card disclaimer-card">
         <strong>TRADE9 Educational Platform Notice:</strong>
@@ -736,17 +1419,607 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
     </div>
 
     <script>
+        // State variables
         let currentJobId = null;
         let pollTimer = null;
         let jobOffset = 0;
+        let activeSymbol = 'SPY';
+        let activeTimeframe = '1M';
+        let currentQuote = { price: 427.48, currency: 'USD', currency_symbol: '$', symbol: 'SPY' };
+        let activeOrderAction = 'BUY';
+        let activeOrderType = 'MARKET';
+        let latestCandles = [];
+        let aiHistory = [];
 
-        // Init on load
+        // Init on DOM ready
         window.addEventListener('DOMContentLoaded', () => {
             fetchConfig();
             fetchHealth();
             fetchAssistantStatus();
+            fetchPortfolioSummary();
+            selectSymbol('SPY');
         });
 
+        // =====================================================================
+        // PORTFOLIO AND VIRTUAL WALLETS
+        // =====================================================================
+        async function fetchPortfolioSummary() {
+            try {
+                const res = await fetch('/api/portfolio/summary');
+                const data = await res.json();
+                renderPortfolioSummary(data);
+            } catch (err) {
+                console.error('Failed to fetch portfolio summary:', err);
+            }
+        }
+
+        function renderPortfolioSummary(data) {
+            if (!data) return;
+
+            // INR Wallet
+            const inr = data.inr_wallet;
+            if (inr) {
+                document.getElementById('inrEquityBadge').innerText = '₹' + inr.total_equity.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrAvailCash').innerText = '₹' + inr.available_cash.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrReservedCash').innerText = '₹' + inr.reserved_cash.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrMktVal').innerText = '₹' + inr.positions_market_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrUnrealizedPnl').innerText = '₹' + inr.total_unrealized_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrRealizedPnl').innerText = '₹' + inr.realized_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('inrDrawdown').innerText = (inr.current_drawdown * 100).toFixed(1) + '%';
+            }
+
+            // USD Wallet
+            const usd = data.usd_wallet;
+            if (usd) {
+                document.getElementById('usdEquityBadge').innerText = '$' + usd.total_equity.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdAvailCash').innerText = '$' + usd.available_cash.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdReservedCash').innerText = '$' + usd.reserved_cash.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdMktVal').innerText = '$' + usd.positions_market_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdUnrealizedPnl').innerText = '$' + usd.total_unrealized_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdRealizedPnl').innerText = '$' + usd.realized_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('usdDrawdown').innerText = (usd.current_drawdown * 100).toFixed(1) + '%';
+            }
+
+            // Consolidated Valuation
+            const consol = data.consolidated;
+            if (consol && consol.status === 'AVAILABLE') {
+                document.getElementById('consolValuationText').innerText =
+                    `Consolidated rate: 1 USD = ₹${consol.exchange_rate}. Total Equity: ₹${consol.total_consolidated_inr.toLocaleString(undefined, {maximumFractionDigits: 0})}.`;
+                document.getElementById('consolEquityPill').innerText = '₹' + consol.total_consolidated_inr.toLocaleString(undefined, {maximumFractionDigits: 2});
+            }
+
+            // Holdings and Pending orders tables
+            renderHoldingsTable(data);
+            renderPendingTable(data);
+        }
+
+        function renderHoldingsTable(data) {
+            const body = document.getElementById('holdingsTableBody');
+            const inrPositions = data.inr_wallet?.positions || {};
+            const usdPositions = data.usd_wallet?.positions || {};
+
+            const all = [];
+            for (const [sym, pos] of Object.entries(inrPositions)) {
+                all.push({ ...pos, symbol: sym, currSign: '₹' });
+            }
+            for (const [sym, pos] of Object.entries(usdPositions)) {
+                all.push({ ...pos, symbol: sym, currSign: '$' });
+            }
+
+            document.getElementById('holdingsCountBadge').innerText = `${all.length} Positions`;
+
+            if (all.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No open positions yet. Place a paper order above.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = all.map(p => {
+                const pnl = p.unrealized_pnl || 0.0;
+                const pnlColor = pnl >= 0 ? '#10B981' : '#EF4444';
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(p.symbol)}</strong></td>
+                        <td>${p.quantity}</td>
+                        <td>${p.currSign}${p.average_entry_price.toFixed(2)}</td>
+                        <td style="color: ${pnlColor}; font-weight: 700;">${p.currSign}${pnl.toFixed(2)}</td>
+                        <td>
+                            <button class="preset-btn" onclick="quickSell('${escapeHtml(p.symbol)}', ${p.quantity})" style="padding: 2px 8px; font-size: 0.72rem; color: #DC2626;">Sell</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPendingTable(data) {
+            const body = document.getElementById('pendingTableBody');
+            const inrOrders = data.inr_wallet?.orders || [];
+            const usdOrders = data.usd_wallet?.orders || [];
+
+            const pending = [...inrOrders, ...usdOrders].filter(o => o.status === 'PENDING');
+            document.getElementById('pendingCountBadge').innerText = `${pending.length} Pending`;
+
+            if (pending.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No pending limit orders.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = pending.map(o => {
+                const sign = o.currency === 'INR' ? '₹' : '$';
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(o.symbol)}</strong></td>
+                        <td><span class="clay-badge ${o.action === 'BUY' ? 'badge-success' : 'badge-danger'}" style="padding: 2px 6px; font-size: 0.7rem;">${o.action}</span></td>
+                        <td>${sign}${o.limit_price?.toFixed(2) || '0.00'}</td>
+                        <td>${sign}${o.reserved_cash?.toFixed(2) || '0.00'}</td>
+                        <td>
+                            <button class="preset-btn" onclick="cancelOrder('${escapeHtml(o.order_id)}')" style="padding: 2px 8px; font-size: 0.72rem; color: #DC2626;">Cancel</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openResetModal() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        async function confirmResetPortfolio() {
+            try {
+                const res = await fetch('/api/portfolio/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
+                    body: JSON.stringify({ confirmation: true })
+                });
+                const data = await res.json();
+                closeResetModal();
+                if (data.success) {
+                    appendTerminalLine(`\n[Portfolio Reset]: ${data.message}\n`);
+                    fetchPortfolioSummary();
+                } else {
+                    alert(data.error || 'Reset failed.');
+                }
+            } catch (err) {
+                alert('Connection error: ' + err);
+            }
+        }
+
+        // =====================================================================
+        // MARKET INTELLIGENCE & CHARTING
+        // =====================================================================
+        async function selectSymbol(sym) {
+            activeSymbol = sym;
+            // Update active pill
+            document.querySelectorAll('.ticker-pill').forEach(pill => {
+                if (pill.innerText.includes(sym)) {
+                    pill.classList.add('active');
+                } else {
+                    pill.classList.remove('active');
+                }
+            });
+
+            // Fetch quote & candles
+            await fetchQuote(sym);
+            await fetchCandles(sym, activeTimeframe);
+            updateOrderPreview();
+            analyzeNextMove();
+        }
+
+        async function changeTimeframe(tf) {
+            activeTimeframe = tf;
+            await fetchCandles(activeSymbol, tf);
+        }
+
+        async function fetchQuote(sym) {
+            try {
+                const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(sym)}`);
+                const quote = await res.json();
+                if (quote.symbol) {
+                    currentQuote = quote;
+                    document.getElementById('quoteSymbol').innerText = quote.symbol;
+                    const price = quote.last_price || quote.price || 0.0;
+                    document.getElementById('quotePrice').innerText = `${quote.currency_symbol || '$'}${price.toFixed(2)}`;
+                    
+                    const chg = quote.change || 0.0;
+                    const chgPct = quote.change_pct || 0.0;
+                    const chgEl = document.getElementById('quoteChange');
+                    chgEl.style.color = chg >= 0 ? '#10B981' : '#EF4444';
+                    chgEl.innerText = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
+
+                    document.getElementById('quoteDelayBadge').innerText = quote.data_delay || 'Delayed (15m)';
+                    document.getElementById('quoteCurrencyBadge').innerText = quote.currency || 'USD';
+                    document.getElementById('ticketCurrencyPill').innerText = quote.currency || 'USD';
+
+                    // Update limit input default
+                    document.getElementById('orderLimitPriceInput').value = price.toFixed(2);
+                }
+            } catch (err) {
+                console.error('Failed to fetch quote:', err);
+            }
+        }
+
+        async function fetchCandles(sym, tf) {
+            try {
+                const res = await fetch(`/api/market/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}`);
+                const data = await res.json();
+                if (data.candles && data.candles.length > 0) {
+                    latestCandles = data.candles;
+                    drawCandlestickChart(data.candles);
+                } else {
+                    drawEmptyChart();
+                }
+            } catch (err) {
+                console.error('Failed to fetch candles:', err);
+                drawEmptyChart();
+            }
+        }
+
+        function drawCandlestickChart(candles) {
+            const canvas = document.getElementById('candleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            if (!candles || candles.length === 0) {
+                drawEmptyChart();
+                return;
+            }
+
+            // Sub-chart split: Top 75% for Candlesticks & MAs, Bottom 25% for RSI
+            const chartH = h * 0.72;
+            const rsiH = h * 0.22;
+            const rsiY = h * 0.76;
+
+            const visible = candles.slice(-50); // Show last 50 bars
+            const n = visible.length;
+
+            let minP = Infinity;
+            let maxP = -Infinity;
+            for (const c of visible) {
+                if (c.low < minP) minP = c.low;
+                if (c.high > maxP) maxP = c.high;
+            }
+            if (minP === maxP) { minP -= 1; maxP += 1; }
+            const pRange = maxP - minP;
+
+            const padX = 40;
+            const barW = (w - padX * 2) / n;
+
+            // Background grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 4; i++) {
+                const y = (chartH / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padX, y);
+                ctx.lineTo(w - padX, y);
+                ctx.stroke();
+
+                // Price label
+                const pVal = maxP - (pRange / 5) * i;
+                ctx.fillStyle = '#64748B';
+                ctx.font = '10px monospace';
+                ctx.fillText(pVal.toFixed(2), 6, y + 3);
+            }
+
+            // Draw candles
+            for (let i = 0; i < n; i++) {
+                const c = visible[i];
+                const x = padX + i * barW + barW / 2;
+                const isUp = c.close >= c.open;
+                const color = isUp ? '#10B981' : '#EF4444';
+
+                const yHigh = chartH - ((c.high - minP) / pRange) * chartH;
+                const yLow = chartH - ((c.low - minP) / pRange) * chartH;
+                const yOpen = chartH - ((c.open - minP) / pRange) * chartH;
+                const yClose = chartH - ((c.close - minP) / pRange) * chartH;
+
+                // Wick
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(x, yHigh);
+                ctx.lineTo(x, yLow);
+                ctx.stroke();
+
+                // Body
+                const bodyY = Math.min(yOpen, yClose);
+                const bodyH = Math.max(Math.abs(yClose - yOpen), 2);
+                ctx.fillStyle = color;
+                ctx.fillRect(x - barW * 0.35, bodyY, barW * 0.7, bodyH);
+            }
+
+            // Draw SMA 20 (amber) line
+            drawLineOverlay(ctx, visible, 'sma20', '#F59E0B', minP, pRange, chartH, padX, barW);
+            // Draw SMA 50 (blue) line
+            drawLineOverlay(ctx, visible, 'sma50', '#38BDF8', minP, pRange, chartH, padX, barW);
+
+            // RSI Sub-chart background & lines
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.fillRect(padX, rsiY, w - padX * 2, rsiH);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.strokeRect(padX, rsiY, w - padX * 2, rsiH);
+
+            // RSI 70 & 30 guide lines
+            const y70 = rsiY + rsiH * 0.3;
+            const y30 = rsiY + rsiH * 0.7;
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padX, y70);
+            ctx.lineTo(w - padX, y70);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(padX, y30);
+            ctx.lineTo(w - padX, y30);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // RSI Curve
+            ctx.strokeStyle = '#A855F7';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            let startedRsi = false;
+            for (let i = 0; i < n; i++) {
+                const rsi = visible[i].rsi14;
+                if (rsi != null && !isNaN(rsi)) {
+                    const x = padX + i * barW + barW / 2;
+                    const y = rsiY + rsiH - (rsi / 100.0) * rsiH;
+                    if (!startedRsi) { ctx.moveTo(x, y); startedRsi = true; }
+                    else { ctx.lineTo(x, y); }
+                }
+            }
+            ctx.stroke();
+
+            // Label for RSI
+            ctx.fillStyle = '#A855F7';
+            ctx.font = '10px monospace';
+            const lastRsi = visible[n - 1]?.rsi14?.toFixed(1) || '50.0';
+            ctx.fillText(`RSI(14): ${lastRsi}`, padX + 8, rsiY + 14);
+        }
+
+        function drawLineOverlay(ctx, bars, field, color, minP, pRange, chartH, padX, barW) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            let started = false;
+            for (let i = 0; i < bars.length; i++) {
+                const val = bars[i][field];
+                if (val && !isNaN(val)) {
+                    const x = padX + i * barW + barW / 2;
+                    const y = chartH - ((val - minP) / pRange) * chartH;
+                    if (!started) { ctx.moveTo(x, y); started = true; }
+                    else { ctx.lineTo(x, y); }
+                }
+            }
+            ctx.stroke();
+        }
+
+        function drawEmptyChart() {
+            const canvas = document.getElementById('candleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#64748B';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Market history loading or offline cache empty...', canvas.width / 2, canvas.height / 2);
+        }
+
+        // =====================================================================
+        // AI FORECASTING AND RISK ANALYSIS
+        // =====================================================================
+        async function analyzeNextMove() {
+            const horizon = document.getElementById('forecastHorizonSelect').value;
+            const model = document.getElementById('forecastModelSelect').value;
+
+            try {
+                const res = await fetch(`/api/market/forecast?symbol=${encodeURIComponent(activeSymbol)}&horizon=${horizon}&model=${model}`);
+                const data = await res.json();
+                renderForecastOutput(data);
+            } catch (err) {
+                console.error('Failed to run forecast:', err);
+            }
+        }
+
+        function renderForecastOutput(data) {
+            if (!data) return;
+
+            // Risk Rating Badge
+            const riskPill = document.getElementById('forecastRiskRatingPill');
+            const rating = data.market_risk?.risk_rating || data.risk_rating || 'INSUFFICIENT EVIDENCE';
+            riskPill.innerText = rating;
+            riskPill.className = 'risk-rating-pill ' + (
+                rating === 'LOW' ? 'risk-low' :
+                rating === 'MODERATE' ? 'risk-mod' :
+                rating === 'HIGH' ? 'risk-high' :
+                rating === 'VERY HIGH' ? 'risk-extreme' : 'risk-unknown'
+            );
+
+            // Probabilities
+            if (data.status === 'VALIDATED' && data.forecast) {
+                const up = data.forecast.probability_up;
+                const down = data.forecast.probability_down;
+                document.getElementById('meterBullish').style.width = up + '%';
+                document.getElementById('meterBearish').style.width = down + '%';
+                document.getElementById('probBullishText').innerText = `Bullish Up: ${up.toFixed(1)}%`;
+                document.getElementById('probBearishText').innerText = `Bearish Down: ${down.toFixed(1)}%`;
+
+                document.getElementById('forecastBrierVal').innerText = data.model_info?.brier_score ?? '0.25';
+                document.getElementById('forecastCalibVal').innerText = 'VALIDATED';
+            } else {
+                document.getElementById('meterBullish').style.width = '50%';
+                document.getElementById('meterBearish').style.width = '50%';
+                document.getElementById('probBullishText').innerText = 'Untrained Horizon';
+                document.getElementById('probBearishText').innerText = 'Untrained Horizon';
+                document.getElementById('forecastCalibVal').innerText = 'MODEL UNTRAINED';
+            }
+
+            // Market Risk Metrics
+            if (data.market_risk) {
+                document.getElementById('forecastVolVal').innerText = data.market_risk.annualized_volatility + '%';
+                document.getElementById('forecastVarVal').innerText = '-' + data.market_risk.adverse_scenario_var95_pct + '%';
+            }
+
+            // Limitations
+            if (data.model_limitations && data.model_limitations.length > 0) {
+                document.getElementById('forecastLimitations').innerHTML =
+                    '<strong>Risk Notes:</strong> ' + data.model_limitations.join(' &bull; ');
+            }
+        }
+
+        // =====================================================================
+        // PAPER ORDER TICKET LOGIC
+        // =====================================================================
+        function setOrderAction(action) {
+            activeOrderAction = action;
+            if (action === 'BUY') {
+                document.getElementById('btnActionBuy').classList.add('selected');
+                document.getElementById('btnActionSell').classList.remove('selected');
+                document.getElementById('btnSubmitOrder').className = 'clay-btn clay-btn-success';
+                document.getElementById('btnSubmitOrder').innerText = '🚀 Submit Paper Buy Order';
+            } else {
+                document.getElementById('btnActionBuy').classList.remove('selected');
+                document.getElementById('btnActionSell').classList.add('selected');
+                document.getElementById('btnSubmitOrder').className = 'clay-btn clay-btn-danger';
+                document.getElementById('btnSubmitOrder').innerText = '🚀 Submit Paper Sell Order';
+            }
+            updateOrderPreview();
+        }
+
+        function setOrderType(otype) {
+            activeOrderType = otype;
+            if (otype === 'MARKET') {
+                document.getElementById('btnTypeMarket').classList.add('active');
+                document.getElementById('btnTypeLimit').classList.remove('active');
+                document.getElementById('limitPriceGroup').style.display = 'none';
+            } else {
+                document.getElementById('btnTypeMarket').classList.remove('active');
+                document.getElementById('btnTypeLimit').classList.add('active');
+                document.getElementById('limitPriceGroup').style.display = 'block';
+            }
+            updateOrderPreview();
+        }
+
+        function updateOrderPreview() {
+            const qty = parseFloat(document.getElementById('orderQtyInput').value) || 1;
+            const refPrice = currentQuote.last_price || currentQuote.price || 400.0;
+            const sign = currentQuote.currency_symbol || '$';
+
+            let fillPrice = refPrice;
+            if (activeOrderType === 'LIMIT') {
+                const limitVal = parseFloat(document.getElementById('orderLimitPriceInput').value);
+                if (limitVal > 0) fillPrice = limitVal;
+            }
+
+            // Slippage (0.05%)
+            const slippageRate = 0.0005;
+            const estSlippage = fillPrice * slippageRate * qty;
+            const notional = fillPrice * qty;
+
+            // Simulated fee (0.10% + fixed)
+            const fixedFee = currentQuote.currency === 'INR' ? 20.0 : 1.0;
+            const estFee = notional * 0.001 + fixedFee;
+            const total = notional + estFee;
+
+            document.getElementById('previewRefPrice').innerText = `${sign}${fillPrice.toFixed(2)}`;
+            document.getElementById('previewSlippage').innerText = `${sign}${estSlippage.toFixed(2)}`;
+            document.getElementById('previewFee').innerText = `${sign}${estFee.toFixed(2)}`;
+            document.getElementById('previewTotalCost').innerText = `${sign}${total.toFixed(2)}`;
+        }
+
+        async function submitPaperOrder() {
+            const qty = parseFloat(document.getElementById('orderQtyInput').value) || 1;
+            const limitPriceVal = parseFloat(document.getElementById('orderLimitPriceInput').value);
+
+            const payload = {
+                symbol: activeSymbol,
+                action: activeOrderAction,
+                order_type: activeOrderType,
+                quantity: qty,
+                current_price: currentQuote.last_price || currentQuote.price || 0.0,
+                forecast_metadata: {
+                    model_evaluated: document.getElementById('forecastModelSelect').value,
+                    horizon: document.getElementById('forecastHorizonSelect').value,
+                    generated_at: new Date().toISOString()
+                }
+            };
+
+            if (activeOrderType === 'LIMIT' && limitPriceVal > 0) {
+                payload.limit_price = limitPriceVal;
+            }
+
+            try {
+                const res = await fetch('/api/portfolio/order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    appendTerminalLine(`\n[Paper Order Executed]: ${payload.action} ${qty} ${activeSymbol} (Status: ${data.order.status})\n`);
+                    fetchPortfolioSummary();
+                } else {
+                    alert('Order Error: ' + (data.error || 'Failed to submit order.'));
+                }
+            } catch (err) {
+                alert('Connection error: ' + err);
+            }
+        }
+
+        async function quickSell(sym, qty) {
+            selectSymbol(sym);
+            setOrderAction('SELL');
+            document.getElementById('orderQtyInput').value = qty;
+            updateOrderPreview();
+        }
+
+        async function cancelOrder(orderId) {
+            try {
+                const res = await fetch('/api/portfolio/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Studio-Token': window.__STUDIO_AUTH_TOKEN__ || ''
+                    },
+                    body: JSON.stringify({ order_id: orderId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    appendTerminalLine(`\n[Order Cancelled]: Order ${orderId} cancelled.\n`);
+                    fetchPortfolioSummary();
+                } else {
+                    alert('Cancel Error: ' + (data.error || 'Failed to cancel order.'));
+                }
+            } catch (err) {
+                alert('Connection error: ' + err);
+            }
+        }
+
+        function handleSymbolSearch(val) {
+            const clean = val.trim().toUpperCase();
+            if (clean.length >= 2) {
+                selectSymbol(clean);
+            }
+        }
+
+        // =====================================================================
+        // WORKSPACE, HEALTH & AI ASSISTANT FUNCTIONS
+        // =====================================================================
         async function fetchConfig() {
             try {
                 const res = await fetch('/api/config');
@@ -754,7 +2027,6 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                 document.getElementById('activePath').innerText = data.project_dir;
                 document.getElementById('promptCwd').innerText = 'PS ' + data.project_dir + '>';
 
-                // Check localStorage or modal requirement
                 const locked = localStorage.getItem('trade9_dir_locked');
                 if (!locked) {
                     document.getElementById('dirInput').value = data.project_dir;
@@ -813,6 +2085,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                     document.getElementById('promptCwd').innerText = 'PS ' + data.project_dir + '>';
                     closeModal();
                     appendTerminalLine(`\n[Workspace Locked]: Root set to ${data.project_dir}\n`);
+                    fetchPortfolioSummary();
                 } else {
                     alert(data.error || 'Failed to set path');
                 }
@@ -833,13 +2106,6 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             if (!cmd) return;
             input.value = '';
             runCommand(cmd);
-        }
-
-        function setCommand(cmd) {
-            const input = document.getElementById('termInput');
-            input.value = cmd;
-            input.focus();
-            appendTerminalLine(`\n[Prompt updated]: ${cmd}\n`);
         }
 
         function runPreset(cmd) {
@@ -981,9 +2247,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             document.body.removeChild(ta);
         }
 
-        // --- AI Research Assistant Client ---
-        let aiHistory = [];
-
+        // --- AI Assistant Functions ---
         async function fetchAssistantStatus() {
             const badge = document.getElementById('aiModelBadge');
             try {
@@ -1040,7 +2304,6 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             const historyBox = document.getElementById('aiChatHistory');
             const nowTime = new Date().toLocaleTimeString();
 
-            // Append user message
             const userDiv = document.createElement('div');
             userDiv.className = 'ai-msg ai-msg-user';
             userDiv.innerHTML = `
@@ -1049,7 +2312,6 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             `;
             historyBox.appendChild(userDiv);
 
-            // Append bot thinking bubble
             const thinkingDiv = document.createElement('div');
             thinkingDiv.className = 'ai-msg ai-msg-bot';
             thinkingDiv.id = 'aiThinkingBubble';

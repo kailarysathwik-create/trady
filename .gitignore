@@ -84,6 +84,8 @@ data/features/*
 !data/features/.gitkeep
 data/targets/*
 !data/targets/.gitkeep
+data/paper/*
+!data/paper/.gitkeep
 
 # Model weights, serialized artifacts, large experiment outputs
 models/*
