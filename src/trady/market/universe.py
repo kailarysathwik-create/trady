@@ -362,6 +362,8 @@ def get_instrument_info(symbol: str) -> InstrumentInfo:
     clean = symbol.strip().upper()
     if clean in _UNIVERSE_INDEX:
         return _UNIVERSE_INDEX[clean]
+    if f"^{clean}" in _UNIVERSE_INDEX:
+        return _UNIVERSE_INDEX[f"^{clean}"]
 
     # Synthesize fallback for unlisted but valid symbol
     is_inr = (

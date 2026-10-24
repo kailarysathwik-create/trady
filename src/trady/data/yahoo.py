@@ -57,6 +57,20 @@ class YahooFinanceProvider(MarketDataProvider):
         if not sym:
             raise ValueError("Symbol must be a non-empty string.")
 
+        # Auto-alias common index symbols if leading caret was omitted
+        upper_sym = sym.upper()
+        if upper_sym in (
+            "NSEI",
+            "NSEBANK",
+            "BSESN",
+            "GSPC",
+            "IXIC",
+            "DJI",
+            "VIX",
+            "RUT",
+        ):
+            sym = f"^{upper_sym}"
+
         # Format dates as YYYY-MM-DD
         start_str = self._format_date(start_time)
         end_str = self._format_date(end_time)

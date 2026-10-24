@@ -72,6 +72,23 @@ def download_and_ingest_market_data(
         FileExistsError: If destination files exist and overwrite=False.
         ValueError: If validation fails or input dates are invalid.
     """
+    # Normalize common index symbols where leading caret is omitted
+    clean_sym = symbol.strip()
+    upper_sym = clean_sym.upper()
+    if upper_sym in (
+        "NSEI",
+        "NSEBANK",
+        "BSESN",
+        "GSPC",
+        "IXIC",
+        "DJI",
+        "VIX",
+        "RUT",
+    ):
+        symbol = f"^{upper_sym}"
+    else:
+        symbol = clean_sym
+
     prov = provider or YahooFinanceProvider()
     slug = _sanitize_symbol_slug(symbol)
 
