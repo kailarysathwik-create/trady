@@ -829,6 +829,88 @@
         }
         .modal-overlay.hidden { display: none; }
         .modal-card { max-width: 500px; width: 100%; }
+    
+        /* Beginner Signals & Outcome Challenge Styles */
+        .signal-badge-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .signal-pill {
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .signal-buy { background: #10B981; color: #FFFFFF; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+        .signal-sell { background: #EF4444; color: #FFFFFF; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+        .signal-neutral { background: #F59E0B; color: #FFFFFF; }
+
+        .signal-reason-tag {
+            font-size: 0.72rem;
+            color: #94A3B8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .beginner-tip-box {
+            background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+            border: 1px solid #A7F3D0;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.76rem;
+        }
+
+        .challenge-card {
+            background: linear-gradient(135deg, #FFFFFF, #F8FAFC);
+            border: 1px solid var(--clay-border);
+            border-radius: 18px;
+            padding: 16px 20px;
+            margin-top: 14px;
+        }
+
+        .challenge-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid var(--clay-border);
+            padding-bottom: 10px;
+        }
+
+        .scoreboard-strip {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--clay-surface);
+            border: 1px solid var(--clay-border);
+            padding: 4px 10px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 5px var(--clay-shadow-dark);
+        }
+
+        .challenge-progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+    
     </style>
 </head>
 <body>
@@ -976,6 +1058,12 @@
                         <span class="chart-change" id="quoteChange" style="color: #10B981;">+1.24 (+0.29%)</span>
                     </div>
 
+                    <!-- Beginner Tiny Signals & Confidence Pill -->
+                    <div class="signal-badge-box" id="beginnerSignalBox">
+                        <span class="signal-pill signal-buy" id="easySignalPill">🟢 BUY SIGNAL (58%)</span>
+                        <span class="signal-reason-tag" id="easyReasonTag">📈 Above 20d trend &bull; Moderate risk</span>
+                    </div>
+
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <span id="quoteDelayBadge" class="clay-badge badge-success"><span class="pulse-dot"></span> Live (Ticking)</span>
                         <div class="preset-buttons">
@@ -1095,6 +1183,17 @@
                     <span class="clay-badge badge-primary" id="ticketCurrencyPill">USD</span>
                 </div>
 
+                <!-- Beginner Explainer Tip -->
+                <div class="beginner-tip-box" id="beginnerTipBox">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #065F46;">
+                        <span>💡 Beginner Tip</span>
+                        <span class="clay-badge badge-success" style="padding: 1px 6px; font-size: 0.68rem;">EASY MODE</span>
+                    </div>
+                    <div id="beginnerTipText" style="color: #047857; font-size: 0.74rem; margin-top: 3px; line-height: 1.35;">
+                        AI predicts upward move! Click <strong>25%</strong> to size safely, then click <strong>Submit Paper Buy</strong>!
+                    </div>
+                </div>
+
                 <!-- Active Instrument Summary Bar -->
                 <div style="background: rgba(0,0,0,0.03); border-radius: 12px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -1161,6 +1260,74 @@
                     🚀 Submit Paper Buy Order
                 </button>
             </div>
+        </div>
+
+        <!-- AI Prediction Outcome Challenge & Live Countdown Timer -->
+        <div class="clay-card challenge-card" id="aiChallengeCard">
+            <div class="challenge-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.35rem;">⏱️</span>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 800;">TRADE9 Outcome Challenge & Live Timer</h3>
+                        <p style="font-size: 0.74rem; color: var(--text-muted);">Test the AI's guess! Watch live profit or loss tick down until time runs out.</p>
+                    </div>
+                </div>
+
+                <!-- Scoreboard -->
+                <div class="scoreboard-strip">
+                    <span class="stat-pill">🏆 Wins: <strong id="scoreWins" style="color: #10B981;">0</strong></span>
+                    <span class="stat-pill">🛑 Losses: <strong id="scoreLosses" style="color: #EF4444;">0</strong></span>
+                    <span class="stat-pill">🔥 Streak: <strong id="scoreStreak" style="color: #F59E0B;">0</strong></span>
+                    <span class="stat-pill">🎯 Win Rate: <strong id="scoreWinRate">0%</strong></span>
+                </div>
+            </div>
+
+            <!-- Active Countdown Box (Ticking) -->
+            <div id="challengeActiveBox" style="display: none; background: #0B0F19; border-radius: 14px; padding: 14px 18px; color: white; margin-top: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                        <span class="clay-badge badge-primary" id="challengeSymbolPill">SPY Challenge</span>
+                        <span style="font-size: 0.82rem; font-family: monospace; margin-left: 8px;" id="challengeEntryText">Entry: $427.48</span>
+                        <span class="clay-badge badge-success" id="challengeSidePill" style="margin-left: 6px;">BUY</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span style="font-size: 1.5rem; font-weight: 800; font-family: monospace; color: #38BDF8;" id="challengeCountdownText">00:30</span>
+                        <span style="font-size: 0.72rem; color: #94A3B8;">REMAINING</span>
+                    </div>
+                </div>
+
+                <!-- Live P&L Tracking Bar -->
+                <div style="margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-family: monospace;">
+                        <span>Live Outcome Tracking:</span>
+                        <span id="challengeLivePnl" style="font-weight: 800; color: #10B981;">+$0.00 (+0.00%) &bull; IN PROFIT</span>
+                    </div>
+                    <div class="challenge-progress-bar">
+                        <div id="challengeProgressFill" style="width: 100%; height: 100%; background: linear-gradient(90deg, #38BDF8, #818CF8); transition: width 1s linear;"></div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.74rem; color: #94A3B8; display: flex; justify-content: space-between;">
+                    <span>AI Guess: <strong id="challengeAiGuess" style="color: #10B981;">BULLISH (UP 58%)</strong></span>
+                    <span>Goal: Hold profit until timer reaches 00:00!</span>
+                </div>
+            </div>
+
+            <!-- Start / Controls Row -->
+            <div id="challengeStartControls" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">Practice Timer:</span>
+                    <button class="preset-btn active" id="btnTimer30" onclick="setChallengeDuration(30)">⚡ 30s Fast</button>
+                    <button class="preset-btn" id="btnTimer60" onclick="setChallengeDuration(60)">⏱️ 60s</button>
+                    <button class="preset-btn" id="btnTimer120" onclick="setChallengeDuration(120)">⏳ 2 Mins</button>
+                </div>
+                <button class="clay-btn clay-btn-primary" style="padding: 9px 18px; font-size: 0.88rem;" onclick="startOutcomeChallenge()">
+                    🚀 Start AI Guess & Outcome Challenge
+                </button>
+            </div>
+
+            <!-- Resolution Result Alert Banner -->
+            <div id="challengeResultBanner" style="display: none; margin-top: 12px; padding: 12px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;"></div>
         </div>
 
         <!-- Open Holdings & Pending Limit Orders Dual Card -->
@@ -1340,6 +1507,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             selectSymbol('SPY');
             startStreaming();
             initChartHoverEvents();
+            loadSavedScores();
         });
 
         // =====================================================================
@@ -2012,6 +2180,200 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             }
         }
 
+        
+        // =====================================================================
+        // BEGINNER SIGNALS & AI OUTCOME TIMER CHALLENGE
+        // =====================================================================
+        let challengeTimer = null;
+        let challengeSecondsLeft = 0;
+        let challengeTotalSeconds = 30;
+        let challengeEntryPrice = 0;
+        let challengeAction = 'BUY';
+        let challengeQty = 10;
+        let challengeScores = { wins: 0, losses: 0, streak: 0 };
+
+        function loadSavedScores() {
+            try {
+                const saved = localStorage.getItem('trade9_challenge_scores');
+                if (saved) {
+                    challengeScores = JSON.parse(saved);
+                    updateScoreboardUI();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function saveScores() {
+            try {
+                localStorage.setItem('trade9_challenge_scores', JSON.stringify(challengeScores));
+                updateScoreboardUI();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function updateScoreboardUI() {
+            const wins = challengeScores.wins || 0;
+            const losses = challengeScores.losses || 0;
+            const total = wins + losses;
+            const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+
+            const wEl = document.getElementById('scoreWins');
+            const lEl = document.getElementById('scoreLosses');
+            const sEl = document.getElementById('scoreStreak');
+            const rEl = document.getElementById('scoreWinRate');
+
+            if (wEl) wEl.innerText = wins;
+            if (lEl) lEl.innerText = losses;
+            if (sEl) sEl.innerText = challengeScores.streak || 0;
+            if (rEl) rEl.innerText = `${rate}%`;
+        }
+
+        function setChallengeDuration(sec) {
+            challengeTotalSeconds = sec;
+            ['30', '60', '120'].forEach(s => {
+                const btn = document.getElementById('btnTimer' + s);
+                if (btn) {
+                    if (s === String(sec)) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        function updateBeginnerSignals(bullishProb) {
+            const pill = document.getElementById('easySignalPill');
+            const tag = document.getElementById('easyReasonTag');
+            const tip = document.getElementById('beginnerTipText');
+            if (!pill || !tag) return;
+
+            const probPct = Math.round(bullishProb * 100);
+            if (probPct >= 55) {
+                pill.className = 'signal-pill signal-buy';
+                pill.innerText = `🟢 BUY SIGNAL (${probPct}%)`;
+                tag.innerText = '📈 Price trend rising • Dip entry chance';
+                if (tip) tip.innerHTML = `AI predicts <strong>UPWARD</strong> move (${probPct}%). Sizing tip: click <strong>25% Cash</strong> and press <strong>Submit Paper Buy</strong>!`;
+            } else if (probPct <= 45) {
+                pill.className = 'signal-pill signal-sell';
+                pill.innerText = `🔴 SELL SIGNAL (${100 - probPct}%)`;
+                tag.innerText = '📉 Resistance hit • Take profit / short chance';
+                if (tip) tip.innerHTML = `AI predicts <strong>DOWNWARD</strong> pullback. Protect your capital or practice a sell order!`;
+            } else {
+                pill.className = 'signal-pill signal-neutral';
+                pill.innerText = `🟡 NEUTRAL (${probPct}%)`;
+                tag.innerText = '⚖️ Balanced market • Wait for breakout';
+                if (tip) tip.innerHTML = `Market is in sideways range. Beginners should <strong>WAIT</strong> for a clear green/red signal!`;
+            }
+        }
+
+        function startOutcomeChallenge() {
+            if (challengeTimer) clearInterval(challengeTimer);
+
+            const bullWidth = parseFloat(document.getElementById('meterBullish').style.width) || 50;
+            challengeAction = bullWidth >= 50 ? 'BUY' : 'SELL';
+            challengeEntryPrice = currentQuote.last_price || currentQuote.price || 400.0;
+            challengeSecondsLeft = challengeTotalSeconds;
+            challengeQty = 10;
+
+            const banner = document.getElementById('challengeResultBanner');
+            if (banner) banner.style.display = 'none';
+
+            const activeBox = document.getElementById('challengeActiveBox');
+            if (activeBox) activeBox.style.display = 'block';
+
+            document.getElementById('challengeSymbolPill').innerText = `${activeSymbol} Challenge`;
+            const sign = currentQuote.currency_symbol || '$';
+            document.getElementById('challengeEntryText').innerText = `Entry: ${sign}${challengeEntryPrice.toFixed(2)}`;
+
+            const sidePill = document.getElementById('challengeSidePill');
+            sidePill.className = challengeAction === 'BUY' ? 'clay-badge badge-success' : 'clay-badge badge-danger';
+            sidePill.innerText = challengeAction;
+
+            const guessText = document.getElementById('challengeAiGuess');
+            guessText.style.color = challengeAction === 'BUY' ? '#10B981' : '#EF4444';
+            guessText.innerText = challengeAction === 'BUY' ? `BULLISH (UP ${bullWidth.toFixed(0)}%)` : `BEARISH (DOWN ${(100 - bullWidth).toFixed(0)}%)`;
+
+            updateChallengeUI();
+
+            challengeTimer = setInterval(() => {
+                challengeSecondsLeft--;
+                updateChallengeUI();
+                if (challengeSecondsLeft <= 0) {
+                    clearInterval(challengeTimer);
+                    challengeTimer = null;
+                    resolveOutcomeChallenge();
+                }
+            }, 1000);
+        }
+
+        function updateChallengeUI() {
+            const mins = Math.floor(challengeSecondsLeft / 60);
+            const secs = challengeSecondsLeft % 60;
+            const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('challengeCountdownText').innerText = timeStr;
+
+            const pctLeft = (challengeSecondsLeft / challengeTotalSeconds) * 100;
+            const progress = document.getElementById('challengeProgressFill');
+            if (progress) progress.style.width = pctLeft + '%';
+
+            // Calculate live P&L based on current price vs entry
+            const curPrice = currentQuote.last_price || currentQuote.price || challengeEntryPrice;
+            const sign = currentQuote.currency_symbol || '$';
+            const priceDiff = challengeAction === 'BUY' ? (curPrice - challengeEntryPrice) : (challengeEntryPrice - curPrice);
+            const pnlAmount = priceDiff * challengeQty;
+            const pnlPct = (priceDiff / challengeEntryPrice) * 100;
+
+            const liveEl = document.getElementById('challengeLivePnl');
+            if (liveEl) {
+                const isProfit = pnlAmount >= 0;
+                liveEl.style.color = isProfit ? '#10B981' : '#EF4444';
+                liveEl.innerText = `${isProfit ? '+' : ''}${sign}${pnlAmount.toFixed(2)} (${isProfit ? '+' : ''}${pnlPct.toFixed(2)}%) • ${isProfit ? 'IN PROFIT 🟢' : 'IN LOSS 🔴'}`;
+            }
+        }
+
+        function resolveOutcomeChallenge() {
+            const curPrice = currentQuote.last_price || currentQuote.price || challengeEntryPrice;
+            const sign = currentQuote.currency_symbol || '$';
+            const priceDiff = challengeAction === 'BUY' ? (curPrice - challengeEntryPrice) : (challengeEntryPrice - curPrice);
+            const pnlAmount = priceDiff * challengeQty;
+            const pnlPct = (priceDiff / challengeEntryPrice) * 100;
+            const isWin = pnlAmount >= 0;
+
+            if (isWin) {
+                challengeScores.wins++;
+                challengeScores.streak++;
+            } else {
+                challengeScores.losses++;
+                challengeScores.streak = 0;
+            }
+            saveScores();
+
+            const activeBox = document.getElementById('challengeActiveBox');
+            if (activeBox) activeBox.style.display = 'none';
+
+            const banner = document.getElementById('challengeResultBanner');
+            if (banner) {
+                banner.style.display = 'block';
+                if (isWin) {
+                    banner.style.background = '#ECFDF5';
+                    banner.style.border = '1px solid #A7F3D0';
+                    banner.style.color = '#065F46';
+                    banner.innerHTML = `
+                        <div style="font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;">🎉 CHALLENGE WON: PROFIT! +${sign}${pnlAmount.toFixed(2)} (+${pnlPct.toFixed(2)}%)</div>
+                        <div>The AI prediction was accurate! Entry: ${sign}${challengeEntryPrice.toFixed(2)} ➔ Finish: ${sign}${curPrice.toFixed(2)}. Streak: ${challengeScores.streak} 🔥</div>
+                    `;
+                } else {
+                    banner.style.background = '#FEF2F2';
+                    banner.style.border = '1px solid #FECACA';
+                    banner.style.color = '#991B1B';
+                    banner.innerHTML = `
+                        <div style="font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;">🛑 CHALLENGE LOSS: -${sign}${Math.abs(pnlAmount).toFixed(2)} (${pnlPct.toFixed(2)}%)</div>
+                        <div>Market fluctuated against the guess. Entry: ${sign}${challengeEntryPrice.toFixed(2)} ➔ Finish: ${sign}${curPrice.toFixed(2)}. A simulated stop-loss protects capital!</div>
+                    `;
+                }
+            }
+        }
+    
         function renderForecastData(data) {
             if (!data) return;
             if (data.status === 'VALIDATED' && data.model_forecast) {
@@ -2023,6 +2385,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                 document.getElementById('meterBearish').style.width = bearPct + '%';
                 document.getElementById('probBullishText').innerText = `Bullish Up: ${bullPct}%`;
                 document.getElementById('probBearishText').innerText = `Bearish Down: ${bearPct}%`;
+                updateBeginnerSignals(f.directional_probability);
 
                 const riskPill = document.getElementById('forecastRiskRatingPill');
                 if (data.market_risk) {
