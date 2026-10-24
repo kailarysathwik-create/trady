@@ -274,6 +274,7 @@ class StudioContext:
 
     def _init_services(self) -> None:
         """Initialize or reload portfolio and market intelligence services."""
+        from trady.assistant.service import AssistantService
         from trady.market.forecasting import RiskProbabilityEngine
         from trady.market.provider import MarketQuoteService
         from trady.portfolio.simulator import PaperExchangeSimulator
@@ -286,6 +287,7 @@ class StudioContext:
         self.simulator = PaperExchangeSimulator(wallet_manager=self.wallet_manager)
         self.quote_service = MarketQuoteService(cache_ttl_seconds=60)
         self.risk_engine = RiskProbabilityEngine(quote_service=self.quote_service)
+        self.assistant_service = AssistantService(project_dir=self.project_dir)
 
     def load_config(self) -> None:
         cfg_path = self.project_dir / CONFIG_FILE
@@ -724,25 +726,25 @@ class StudioHandler(BaseHTTPRequestHandler):
         self.send_json(200, artifacts)
 
     def _handle_get_assistant_status(self) -> None:
-        from trady.assistant.service import AssistantService
-
-        service = AssistantService(project_dir=GLOBAL_CONTEXT.project_dir)
-        status = service.get_status()
+        status = GLOBAL_CONTEXT.assistant_service.get_status()
         self.send_json(200, status)
 
     def _handle_post_assistant_chat(self, payload: dict) -> None:
-        from trady.assistant.service import AssistantService
-
         msg = payload.get("message", "").strip()
         history = payload.get("history", [])
         model = payload.get("model", None)
+        fast_mode = bool(payload.get("fast_mode", True))
 
         if not msg:
             self.send_json(400, {"error": "Message cannot be empty."})
             return
 
-        service = AssistantService(project_dir=GLOBAL_CONTEXT.project_dir)
-        resp = service.chat(message=msg, history=history, model=model)
+        resp = GLOBAL_CONTEXT.assistant_service.chat(
+            message=msg,
+            history=history,
+            model=model,
+            fast_mode=fast_mode,
+        )
         self.send_json(
             200,
             {
@@ -751,6 +753,7 @@ class StudioHandler(BaseHTTPRequestHandler):
                 "model_used": resp.model_used,
                 "status": resp.status,
                 "error": resp.error,
+                "latency_ms": getattr(resp, "latency_ms", 0.0),
             },
         )
 
@@ -769,11 +772,14 @@ class StudioHandler(BaseHTTPRequestHandler):
 
     def _handle_get_market_quote(self, query: dict) -> None:
         symbol = query.get("symbol", [""])[0]
+        refresh = query.get("refresh", ["0"])[0] in ("1", "true", "True")
         if not symbol:
             self.send_json(400, {"error": "Symbol query parameter is required."})
             return
         try:
-            quote = GLOBAL_CONTEXT.quote_service.get_quote(symbol)
+            quote = GLOBAL_CONTEXT.quote_service.get_quote(
+                symbol, force_refresh=refresh
+            )
             self.send_json(200, quote)
         except Exception as err:
             self.send_json(

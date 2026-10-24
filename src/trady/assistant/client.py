@@ -112,6 +112,9 @@ class OllamaClient:
             "stream": False,
             "options": {
                 "temperature": self.temperature,
+                "num_predict": 512,
+                "top_k": 40,
+                "top_p": 0.9,
             },
         }
         if tools:

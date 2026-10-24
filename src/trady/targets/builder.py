@@ -141,8 +141,8 @@ def compute_forward_volatility(
 # Default Target Registration
 # -------------------------------------------------------------------------
 
-DEFAULT_RETURN_HORIZONS = (1, 3, 5, 10, 21)
-DEFAULT_VOL_HORIZONS = (5, 10, 21)
+DEFAULT_RETURN_HORIZONS = (1, 3, 5, 10, 20, 21)
+DEFAULT_VOL_HORIZONS = (5, 10, 20, 21)
 
 
 def register_default_targets() -> None:

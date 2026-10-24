@@ -235,6 +235,121 @@
             gap: 6px;
         }
 
+        /* Section Navigation Tabs */
+        .nav-tabs-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab-btn {
+            background: var(--clay-surface);
+            color: var(--text-main);
+            border: 1px solid var(--clay-border);
+            border-radius: 16px;
+            padding: 10px 20px;
+            font-size: 0.90rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 6px 6px 14px var(--clay-shadow-dark), -6px -6px 14px var(--clay-shadow-light);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab-btn:hover {
+            transform: translateY(-2px);
+            color: var(--primary);
+        }
+
+        .nav-tab-btn.active {
+            background: linear-gradient(135deg, #4F46E5, #6366F1);
+            color: #FFFFFF;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2), 4px 4px 12px var(--primary-shadow);
+        }
+
+        /* Streaming Pulse Indicator */
+        .live-stream-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 0.80rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: #ECFDF5;
+            color: #065F46;
+            transition: all 0.2s ease;
+        }
+
+        .live-stream-pill:hover {
+            transform: scale(1.02);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10B981;
+            display: inline-block;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 1.8s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Quick Cash Percentage Sizing */
+        .pct-btn-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 6px 0 10px 0;
+        }
+
+        .pct-btn {
+            background: var(--clay-surface);
+            border: 1px solid var(--clay-border);
+            border-radius: 10px;
+            padding: 6px 4px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            box-shadow: 3px 3px 6px var(--clay-shadow-dark), -3px -3px 6px var(--clay-shadow-light);
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .pct-btn:hover {
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .pct-btn:active {
+            box-shadow: inset 1px 1px 3px var(--clay-shadow-dark);
+        }
+
+        /* Paper desk trading floor grid */
+        .paper-trading-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .paper-trading-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Virtual Money & Paper Exchange Styles */
         .exchange-section {
             margin-bottom: 30px;
@@ -990,18 +1105,46 @@
         </div>
     </div>
 
+    <!-- Main Studio Navigation Tabs -->
+    <div class="nav-tabs-bar">
+        <button class="nav-tab-btn active" id="tabBtnPaper" onclick="switchMainTab('paper')">
+            💼 Paper Trading Desk & Wallets
+        </button>
+        <button class="nav-tab-btn" id="tabBtnMarket" onclick="switchMainTab('market')">
+            📈 Real-Time Charts & AI Forecast
+        </button>
+        <button class="nav-tab-btn" id="tabBtnAi" onclick="switchMainTab('ai')">
+            🤖 Local AI Research Assistant
+        </button>
+        <button class="nav-tab-btn" id="tabBtnTerminal" onclick="switchMainTab('terminal')">
+            ⚡ PowerShell Terminal
+        </button>
+        <button class="nav-tab-btn" id="tabBtnAll" onclick="switchMainTab('all')" style="margin-left: auto;">
+            👁️ View All Sections
+        </button>
+    </div>
+
     <!-- ========================================================================= -->
-    <!-- TRADY VIRTUAL MONEY & PAPER EXCHANGE -->
+    <!-- DEDICATED SECTION 1: TRADY PAPER TRADING & VIRTUAL EXCHANGE DESK -->
     <!-- ========================================================================= -->
-    <section class="exchange-section">
+    <section id="section-paper" class="exchange-section">
         <div class="section-header-row">
             <h2 class="section-title">
-                <span>💳 Virtual Money & Paper Exchange Hub</span>
-                <span class="clay-badge badge-success">Simulated Fictional Balances</span>
+                <span>💼 TRADY Paper Trading & Virtual Execution Desk</span>
+                <span class="clay-badge badge-success">● Practice Mode Only</span>
             </h2>
-            <button class="preset-btn" onclick="fetchPortfolioSummary()" style="padding: 6px 14px;">
-                🔄 Refresh Ledger
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div class="live-stream-pill" id="streamToggleBtn" onclick="toggleStreaming()" title="Toggle 3-second live quote streaming">
+                    <span class="pulse-dot"></span>
+                    <span id="streamStatusText">Live Quotes: ON (3s)</span>
+                </div>
+                <button class="preset-btn" onclick="fetchPortfolioSummary()" style="padding: 6px 14px;">
+                    🔄 Refresh Ledger
+                </button>
+                <button class="preset-btn" onclick="openResetModal()" style="padding: 6px 14px; color: #DC2626;">
+                    🔄 Reset Balances
+                </button>
+            </div>
         </div>
 
         <!-- Dual Wallets Container -->
@@ -1084,222 +1227,115 @@
         </div>
 
         <!-- Consolidated Valuation Strip -->
-        <div class="consolidated-bar" id="consolidatedBar">
+        <div class="consolidated-bar" id="consolidatedBar" style="margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span>🌐 <strong>Consolidated Valuation:</strong></span>
                 <span id="consolValuationText">Independent INR & USD ledgers preserved. Cross-currency rate: 1 USD = 83.50 INR.</span>
             </div>
             <span class="clay-badge badge-primary" id="consolEquityPill">Consolidated: ₹935,000.00</span>
         </div>
-    </section>
 
-    <!-- ========================================================================= -->
-    <!-- REAL-TIME MARKET INTELLIGENCE & CHARTING & AI FORECASTING -->
-    <!-- ========================================================================= -->
-    <section class="exchange-section">
-        <div class="section-header-row">
-            <h2 class="section-title">
-                <span>📈 Real-Time Market Intelligence & AI Forecasting</span>
-            </h2>
-            <div class="preset-buttons">
-                <button class="preset-btn" onclick="analyzeNextMove()">🤖 ANALYZE NEXT MOVE</button>
-            </div>
-        </div>
-
-        <!-- Watchlist and Quick Ticker Selector -->
-        <div class="watchlist-container">
-            <div class="search-row">
-                <input id="symbolSearchInput" class="clay-input" type="text" placeholder="Search instrument (e.g. SPY, QQQ, AAPL, ^NSEI, RELIANCE.NS, TCS.NS)..." oninput="handleSymbolSearch(this.value)" style="max-width: 460px;">
-                <div class="ticker-pills">
-                    <span class="ticker-pill active" onclick="selectSymbol('SPY')">SPY</span>
-                    <span class="ticker-pill" onclick="selectSymbol('QQQ')">QQQ</span>
-                    <span class="ticker-pill" onclick="selectSymbol('AAPL')">AAPL</span>
-                    <span class="ticker-pill" onclick="selectSymbol('NVDA')">NVDA</span>
-                    <span class="ticker-pill" onclick="selectSymbol('^NSEI')">^NSEI (Nifty 50)</span>
-                    <span class="ticker-pill" onclick="selectSymbol('RELIANCE.NS')">RELIANCE</span>
-                    <span class="ticker-pill" onclick="selectSymbol('TCS.NS')">TCS</span>
-                    <span class="ticker-pill" onclick="selectSymbol('HDFCBANK.NS')">HDFCBANK</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Market Hub: Left Chart & AI, Right Order Ticket -->
-        <div class="market-hub-grid">
-            <!-- Left Column: Quote Banner + Interactive Chart + AI Probability Engine -->
-            <div>
-                <!-- Live Quote Banner -->
-                <div class="quote-banner">
-                    <div class="quote-main">
-                        <span class="quote-sym" id="quoteSymbol">SPY</span>
-                        <span class="quote-price" id="quotePrice">$427.48</span>
-                        <span class="quote-change" id="quoteChange" style="color: #10B981;">+1.24 (+0.29%)</span>
-                    </div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <span id="quoteDelayBadge" class="clay-badge badge-warning">Delayed (15m)</span>
-                        <span id="quoteCurrencyBadge" class="clay-badge badge-primary">USD</span>
-                        <span id="quoteTimeBadge" style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Just now</span>
-                    </div>
-                </div>
-
-                <!-- Candlestick Chart Box -->
-                <div class="chart-box">
-                    <div class="chart-toolbar">
-                        <div class="chart-legend">
-                            <span style="color: #10B981;">● Bullish</span>
-                            <span style="color: #EF4444;">● Bearish</span>
-                            <span style="color: #F59E0B;">─ SMA20</span>
-                            <span style="color: #38BDF8;">─ SMA50</span>
-                            <span style="color: #A855F7;">─ EMA20</span>
-                        </div>
-                        <div class="preset-buttons">
-                            <button class="preset-btn" onclick="changeTimeframe('1D')">1D</button>
-                            <button class="preset-btn" onclick="changeTimeframe('1W')">1W</button>
-                            <button class="preset-btn active" onclick="changeTimeframe('1M')">1M</button>
-                            <button class="preset-btn" onclick="changeTimeframe('3M')">3M</button>
-                            <button class="preset-btn" onclick="changeTimeframe('1Y')">1Y</button>
-                        </div>
-                    </div>
-                    <div class="canvas-wrapper">
-                        <canvas id="candleCanvas" width="800" height="380"></canvas>
-                    </div>
-                </div>
-
-                <!-- AI Probability and Forecasting Panel -->
-                <div class="ai-forecast-container" id="aiForecastBox">
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 1.1rem; font-weight: 800;">🤖 AI Probability & Risk Engine</span>
-                            <span id="forecastRiskRatingPill" class="risk-rating-pill risk-mod">MODERATE RISK</span>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            <select id="forecastHorizonSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
-                                <option value="5" selected>5-Day Horizon (Trained)</option>
-                                <option value="1">1-Day Horizon</option>
-                                <option value="20">20-Day Horizon</option>
-                            </select>
-                            <select id="forecastModelSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
-                                <option value="logistic_regression" selected>Logistic Regression</option>
-                                <option value="random_forest">Random Forest</option>
-                                <option value="xgboost">XGBoost</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="forecast-meter-wrapper">
-                        <div class="forecast-meter">
-                            <div class="meter-bullish" id="meterBullish" style="width: 58%;"></div>
-                            <div class="meter-bearish" id="meterBearish" style="width: 42%;"></div>
-                        </div>
-                        <div class="meter-labels">
-                            <span style="color: #059669;" id="probBullishText">Bullish Up: 58.0%</span>
-                            <span style="color: #DC2626;" id="probBearishText">Bearish Down: 42.0%</span>
-                        </div>
-                    </div>
-
-                    <div class="wallet-metrics-grid" style="margin-top: 12px;">
-                        <div class="metric-cell">
-                            <div class="metric-cell-label">Realized Vol (20d)</div>
-                            <div class="metric-cell-val" id="forecastVolVal">16.4%</div>
-                        </div>
-                        <div class="metric-cell">
-                            <div class="metric-cell-label">Adverse Move (95% VaR)</div>
-                            <div class="metric-cell-val" id="forecastVarVal" style="color: #DC2626;">-2.4%</div>
-                        </div>
-                        <div class="metric-cell">
-                            <div class="metric-cell-label">Brier Score</div>
-                            <div class="metric-cell-val" id="forecastBrierVal">0.241</div>
-                        </div>
-                        <div class="metric-cell">
-                            <div class="metric-cell-label">Model Calibration</div>
-                            <div class="metric-cell-val" id="forecastCalibVal" style="font-size: 0.85rem; color: var(--primary);">VALIDATED</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 12px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;" id="forecastLimitations">
-                        <strong>Limitations:</strong> Macro announcements or unexpected rate shifts can invalidate technical patterns. Simulation only.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Paper Order Ticket + Active Holdings -->
-            <div>
-                <!-- Paper Order Ticket -->
-                <div class="clay-card order-ticket">
-                    <h3 style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
-                        <span>📝 Paper Order Ticket</span>
-                        <span class="clay-badge badge-primary" id="ticketCurrencyPill">USD</span>
+        <!-- Dedicated Trading Floor Grid -->
+        <div class="paper-trading-grid">
+            <!-- Left Column: Paper Order Ticket -->
+            <div class="clay-card order-ticket" id="paperTicketCard">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <span>📝 Live Paper Order Ticket</span>
                     </h3>
-
-                    <!-- BUY / SELL Selector -->
-                    <div class="action-selector">
-                        <div class="action-btn action-buy selected" id="btnActionBuy" onclick="setOrderAction('BUY')">BUY</div>
-                        <div class="action-btn action-sell" id="btnActionSell" onclick="setOrderAction('SELL')">SELL</div>
-                    </div>
-
-                    <!-- Order Type Selector -->
-                    <div style="display: flex; gap: 8px;">
-                        <button class="preset-btn active" id="btnTypeMarket" onclick="setOrderType('MARKET')">Market Order</button>
-                        <button class="preset-btn" id="btnTypeLimit" onclick="setOrderType('LIMIT')">Limit Order</button>
-                    </div>
-
-                    <!-- Quantity Input -->
-                    <div class="input-group" style="margin: 6px 0;">
-                        <label for="orderQtyInput">ORDER QUANTITY (SHARES / UNITS)</label>
-                        <input id="orderQtyInput" class="clay-input" type="number" value="10" min="1" step="1" oninput="updateOrderPreview()">
-                    </div>
-
-                    <!-- Limit Price Input (Only for limit orders) -->
-                    <div class="input-group" id="limitPriceGroup" style="margin: 6px 0; display: none;">
-                        <label for="orderLimitPriceInput">LIMIT PRICE</label>
-                        <input id="orderLimitPriceInput" class="clay-input" type="number" step="0.01" oninput="updateOrderPreview()">
-                    </div>
-
-                    <!-- Cost & Friction Breakdown -->
-                    <div class="order-preview-box">
-                        <div class="preview-row">
-                            <span>Reference Price:</span>
-                            <span id="previewRefPrice" style="font-family: monospace;">$427.48</span>
-                        </div>
-                        <div class="preview-row">
-                            <span>Slippage Estimate (0.05%):</span>
-                            <span id="previewSlippage" style="font-family: monospace;">$2.14</span>
-                        </div>
-                        <div class="preview-row">
-                            <span>Simulated Broker Fee:</span>
-                            <span id="previewFee" style="font-family: monospace;">$1.43</span>
-                        </div>
-                        <div class="preview-row highlight">
-                            <span>Estimated Total Capital:</span>
-                            <span id="previewTotalCost" style="font-family: monospace;">$4,278.37</span>
-                        </div>
-                    </div>
-
-                    <!-- Submit Order Button -->
-                    <button class="clay-btn clay-btn-success" id="btnSubmitOrder" style="justify-content: center; padding: 12px; font-size: 0.95rem;" onclick="submitPaperOrder()">
-                        🚀 Submit Paper Order
-                    </button>
+                    <span class="clay-badge badge-primary" id="ticketCurrencyPill">USD</span>
                 </div>
 
+                <!-- Active Instrument Summary Bar -->
+                <div class="clay-card-sm" style="background: rgba(0,0,0,0.03); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span id="ticketSymbolDisplay" style="font-size: 1.1rem; font-weight: 800;">SPY</span>
+                        <span id="ticketPriceDisplay" style="font-family: monospace; font-size: 1rem; font-weight: 700; color: var(--primary); margin-left: 8px;">$427.48</span>
+                    </div>
+                    <div>
+                        <span id="ticketBidAskDisplay" style="font-size: 0.76rem; color: var(--text-muted); font-family: monospace;">Bid: $427.37 / Ask: $427.59</span>
+                    </div>
+                </div>
+
+                <!-- BUY / SELL Selector -->
+                <div class="action-selector">
+                    <div class="action-btn action-buy selected" id="btnActionBuy" onclick="setOrderAction('BUY')">BUY</div>
+                    <div class="action-btn action-sell" id="btnActionSell" onclick="setOrderAction('SELL')">SELL</div>
+                </div>
+
+                <!-- Order Type Selector -->
+                <div style="display: flex; gap: 8px; margin: 8px 0;">
+                    <button class="preset-btn active" id="btnTypeMarket" onclick="setOrderType('MARKET')">Market Order</button>
+                    <button class="preset-btn" id="btnTypeLimit" onclick="setOrderType('LIMIT')">Limit Order</button>
+                </div>
+
+                <!-- Quantity Input + Quick Percent Buttons -->
+                <div class="input-group" style="margin: 6px 0;">
+                    <label for="orderQtyInput">ORDER QUANTITY (SHARES / UNITS)</label>
+                    <input id="orderQtyInput" class="clay-input" type="number" value="10" min="1" step="1" oninput="updateOrderPreview()">
+                    <div class="pct-btn-group">
+                        <button class="pct-btn" type="button" onclick="setQtyPercent(25)">25% Cash</button>
+                        <button class="pct-btn" type="button" onclick="setQtyPercent(50)">50% Cash</button>
+                        <button class="pct-btn" type="button" onclick="setQtyPercent(75)">75% Cash</button>
+                        <button class="pct-btn" type="button" onclick="setQtyPercent(100)">MAX Cash</button>
+                    </div>
+                </div>
+
+                <!-- Limit Price Input (Only for limit orders) -->
+                <div class="input-group" id="limitPriceGroup" style="margin: 6px 0; display: none;">
+                    <label for="orderLimitPriceInput">LIMIT PRICE</label>
+                    <input id="orderLimitPriceInput" class="clay-input" type="number" step="0.01" oninput="updateOrderPreview()">
+                </div>
+
+                <!-- Cost & Friction Breakdown -->
+                <div class="order-preview-box">
+                    <div class="preview-row">
+                        <span>Fill / Limit Reference:</span>
+                        <span id="previewRefPrice" style="font-family: monospace;">$427.48</span>
+                    </div>
+                    <div class="preview-row">
+                        <span>Slippage Estimate (0.05%):</span>
+                        <span id="previewSlippage" style="font-family: monospace;">$2.14</span>
+                    </div>
+                    <div class="preview-row">
+                        <span>Simulated Broker Fee:</span>
+                        <span id="previewFee" style="font-family: monospace;">$1.43</span>
+                    </div>
+                    <div class="preview-row highlight">
+                        <span>Estimated Total Required:</span>
+                        <span id="previewTotalCost" style="font-family: monospace;">$4,278.37</span>
+                    </div>
+                </div>
+
+                <!-- Submit Order Button -->
+                <button class="clay-btn clay-btn-success" id="btnSubmitOrder" style="justify-content: center; padding: 12px; font-size: 0.95rem; width: 100%;" onclick="submitPaperOrder()">
+                    🚀 Submit Paper Buy Order
+                </button>
+            </div>
+
+            <!-- Right Column: Active Holdings + Pending Limit Orders -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
                 <!-- Active Holdings Card -->
-                <div class="clay-card" style="margin-top: 20px;">
-                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                        <span>💼 Open Holdings</span>
+                <div class="clay-card">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>💼 Active Open Holdings</span>
                         <span class="clay-badge badge-success" id="holdingsCountBadge">0 Positions</span>
                     </h3>
-                    <div style="max-height: 240px; overflow-y: auto;">
+                    <div style="max-height: 250px; overflow-y: auto;">
                         <table class="positions-table" id="holdingsTable">
                             <thead>
                                 <tr>
                                     <th>Symbol</th>
                                     <th>Qty</th>
                                     <th>Avg Price</th>
+                                    <th>Current</th>
                                     <th>Unrealized P&L</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="holdingsTableBody">
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No open positions yet. Place a paper order above.</td>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 16px;">No open positions yet. Place a paper order on the left.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1307,12 +1343,12 @@
                 </div>
 
                 <!-- Pending Limit Orders Card -->
-                <div class="clay-card" style="margin-top: 20px;">
-                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div class="clay-card">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
                         <span>⏳ Pending Limit Orders</span>
                         <span class="clay-badge badge-warning" id="pendingCountBadge">0 Pending</span>
                     </h3>
-                    <div style="max-height: 180px; overflow-y: auto;">
+                    <div style="max-height: 200px; overflow-y: auto;">
                         <table class="positions-table" id="pendingTable">
                             <thead>
                                 <tr>
@@ -1335,8 +1371,148 @@
         </div>
     </section>
 
-    <!-- TRADY AI Quantitative Research Assistant -->
-    <div class="assistant-container">
+    <!-- ========================================================================= -->
+    <!-- DEDICATED SECTION 2: REAL-TIME MARKET INTELLIGENCE & AI FORECASTING -->
+    <!-- ========================================================================= -->
+    <section id="section-market" class="exchange-section">
+        <div class="section-header-row">
+            <h2 class="section-title">
+                <span>📈 Real-Time Market Intelligence & AI Forecasting Desk</span>
+            </h2>
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="analyzeNextMove()">🤖 ANALYZE NEXT MOVE</button>
+            </div>
+        </div>
+
+        <!-- Watchlist and Quick Ticker Selector -->
+        <div class="watchlist-container">
+            <div class="search-row">
+                <input id="symbolSearchInput" class="clay-input" type="text" placeholder="Search instrument (e.g. SPY, QQQ, AAPL, NVDA, AMD, PLTR, ^NSEI, RELIANCE.NS, TCS.NS)..." oninput="handleSymbolSearch(this.value)" style="max-width: 460px;">
+                <div class="ticker-pills">
+                    <span class="ticker-pill active" onclick="selectSymbol('SPY')">SPY</span>
+                    <span class="ticker-pill" onclick="selectSymbol('QQQ')">QQQ</span>
+                    <span class="ticker-pill" onclick="selectSymbol('AAPL')">AAPL</span>
+                    <span class="ticker-pill" onclick="selectSymbol('NVDA')">NVDA</span>
+                    <span class="ticker-pill" onclick="selectSymbol('AMD')">AMD</span>
+                    <span class="ticker-pill" onclick="selectSymbol('PLTR')">PLTR</span>
+                    <span class="ticker-pill" onclick="selectSymbol('^NSEI')">^NSEI (Nifty 50)</span>
+                    <span class="ticker-pill" onclick="selectSymbol('^NSEBANK')">^NSEBANK</span>
+                    <span class="ticker-pill" onclick="selectSymbol('RELIANCE.NS')">RELIANCE</span>
+                    <span class="ticker-pill" onclick="selectSymbol('TCS.NS')">TCS</span>
+                    <span class="ticker-pill" onclick="selectSymbol('HDFCBANK.NS')">HDFCBANK</span>
+                    <span class="ticker-pill" onclick="selectSymbol('TATAMOTORS.NS')">TATAMOTORS</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Quote Banner -->
+        <div class="quote-banner">
+            <div class="quote-main">
+                <span class="quote-sym" id="quoteSymbol">SPY</span>
+                <span class="quote-price" id="quotePrice">$427.48</span>
+                <span class="quote-change" id="quoteChange" style="color: #10B981;">+1.24 (+0.29%)</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span id="quoteDelayBadge" class="clay-badge badge-success"><span class="pulse-dot"></span> Live / Streaming</span>
+                <span id="quoteCurrencyBadge" class="clay-badge badge-primary">USD</span>
+                <span id="quoteBidAskBadge" class="clay-badge" style="background: rgba(0,0,0,0.05); font-family: monospace;">Bid: $427.37 / Ask: $427.59</span>
+                <span id="quoteTimeBadge" style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">Just now</span>
+            </div>
+        </div>
+
+        <!-- 2-Column Chart & AI Forecasting Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 430px; gap: 24px;">
+            <!-- Candlestick Chart Box -->
+            <div class="chart-box">
+                <div class="chart-toolbar">
+                    <div class="chart-legend">
+                        <span style="color: #10B981;">● Bullish</span>
+                        <span style="color: #EF4444;">● Bearish</span>
+                        <span style="color: #F59E0B;">─ SMA20</span>
+                        <span style="color: #38BDF8;">─ SMA50</span>
+                        <span style="color: #A855F7;">─ EMA20</span>
+                    </div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="changeTimeframe('1D')">1D</button>
+                        <button class="preset-btn" onclick="changeTimeframe('1W')">1W</button>
+                        <button class="preset-btn active" onclick="changeTimeframe('1M')">1M</button>
+                        <button class="preset-btn" onclick="changeTimeframe('3M')">3M</button>
+                        <button class="preset-btn" onclick="changeTimeframe('1Y')">1Y</button>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="candleCanvas" width="800" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Probability and Forecasting Panel -->
+            <div class="ai-forecast-container" id="aiForecastBox">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.1rem; font-weight: 800;">🤖 AI Probability Engine</span>
+                        <span id="forecastRiskRatingPill" class="risk-rating-pill risk-mod">MODERATE RISK</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <select id="forecastHorizonSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
+                            <option value="1">1-Day Horizon (Trained)</option>
+                            <option value="5" selected>5-Day Horizon (Trained)</option>
+                            <option value="20">20-Day Horizon (Trained)</option>
+                        </select>
+                        <select id="forecastModelSelect" class="clay-input" style="padding: 4px 8px; font-size: 0.78rem; width: auto;" onchange="analyzeNextMove()">
+                            <option value="logistic_regression" selected>Logistic Regression</option>
+                            <option value="random_forest">Random Forest</option>
+                            <option value="xgboost">XGBoost</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="forecast-meter-wrapper">
+                    <div class="forecast-meter">
+                        <div class="meter-bullish" id="meterBullish" style="width: 58%;"></div>
+                        <div class="meter-bearish" id="meterBearish" style="width: 42%;"></div>
+                    </div>
+                    <div class="meter-labels">
+                        <span style="color: #059669;" id="probBullishText">Bullish Up: 58.0%</span>
+                        <span style="color: #DC2626;" id="probBearishText">Bearish Down: 42.0%</span>
+                    </div>
+                </div>
+
+                <div class="wallet-metrics-grid" style="margin-top: 12px;">
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Realized Vol (20d)</div>
+                        <div class="metric-cell-val" id="forecastVolVal">16.4%</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Adverse Move (95% VaR)</div>
+                        <div class="metric-cell-val" id="forecastVarVal" style="color: #DC2626;">-2.4%</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Brier Score</div>
+                        <div class="metric-cell-val" id="forecastBrierVal">0.241</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-cell-label">Model Calibration</div>
+                        <div class="metric-cell-val" id="forecastCalibVal" style="font-size: 0.85rem; color: var(--primary);">VALIDATED</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;" id="forecastLimitations">
+                    <strong>Limitations:</strong> Macro announcements or unexpected rate shifts can invalidate technical patterns. Simulation only.
+                </div>
+
+                <!-- Direct Action Button to Send Signal into Paper Desk -->
+                <button class="clay-btn clay-btn-primary" id="btnTradeSignal" style="width: 100%; justify-content: center; margin-top: 14px;" onclick="tradeForecastSignal()">
+                    🎯 Trade This Signal in Paper Desk ➔
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- DEDICATED SECTION 3: TRADY AI QUANTITATIVE RESEARCH ASSISTANT -->
+    <!-- ========================================================================= -->
+    <section id="section-ai" class="assistant-container" style="margin-bottom: 30px;">
+
         <div class="terminal-header">
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <h2 class="section-title">🤖 TRADY Local AI Research Assistant</h2>
@@ -1375,8 +1551,12 @@
         </div>
     </div>
 
-    <!-- Embedded Interactive Terminal -->
-    <div class="terminal-container">
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- DEDICATED SECTION 4: INTERACTIVE POWERSHELL CONSOLE -->
+    <!-- ========================================================================= -->
+    <section id="section-terminal" class="terminal-container" style="margin-bottom: 30px;">
         <div class="terminal-header">
             <h2 class="section-title">💻 Interactive PowerShell Console</h2>
             <div class="preset-buttons">
@@ -1410,7 +1590,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                 <button class="clay-btn clay-btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="submitCommand()">Run</button>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Educational Disclaimer -->
     <div class="clay-card disclaimer-card">
@@ -1430,6 +1610,9 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
         let activeOrderType = 'MARKET';
         let latestCandles = [];
         let aiHistory = [];
+        let latestPortfolioData = null;
+        let streamingTimer = null;
+        let isStreaming = true;
 
         // Init on DOM ready
         window.addEventListener('DOMContentLoaded', () => {
@@ -1438,7 +1621,107 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             fetchAssistantStatus();
             fetchPortfolioSummary();
             selectSymbol('SPY');
+            startStreaming();
         });
+
+        // =====================================================================
+        // SECTION NAVIGATION TABS & STREAMING CONTROLS
+        // =====================================================================
+        function switchMainTab(tabId) {
+            const tabs = ['paper', 'market', 'ai', 'terminal', 'all'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (btn) btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById('tabBtn' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const sections = {
+                'paper': document.getElementById('section-paper'),
+                'market': document.getElementById('section-market'),
+                'ai': document.getElementById('section-ai'),
+                'terminal': document.getElementById('section-terminal')
+            };
+
+            if (tabId === 'all') {
+                Object.values(sections).forEach(s => { if (s) s.style.display = 'block'; });
+            } else {
+                Object.entries(sections).forEach(([key, sec]) => {
+                    if (sec) sec.style.display = (key === tabId) ? 'block' : 'none';
+                });
+                const targetSec = sections[tabId];
+                if (targetSec) {
+                    targetSec.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+
+        function startStreaming() {
+            if (streamingTimer) clearInterval(streamingTimer);
+            streamingTimer = setInterval(() => {
+                if (isStreaming && activeSymbol) {
+                    fetchQuote(activeSymbol, true);
+                    fetchPortfolioSummary();
+                }
+            }, 3000);
+        }
+
+        function toggleStreaming() {
+            isStreaming = !isStreaming;
+            const pill = document.getElementById('streamToggleBtn');
+            const txt = document.getElementById('streamStatusText');
+            if (isStreaming) {
+                if (pill) pill.classList.remove('paused');
+                if (txt) txt.innerText = 'Live Quotes: ON (3s)';
+            } else {
+                if (pill) pill.classList.add('paused');
+                if (txt) txt.innerText = 'Live Quotes: PAUSED';
+            }
+        }
+
+        function setQtyPercent(pct) {
+            if (!latestPortfolioData || !currentQuote) return;
+            const isINR = currentQuote.currency === 'INR';
+            const wallet = isINR ? latestPortfolioData.inr_wallet : latestPortfolioData.usd_wallet;
+            if (!wallet) return;
+
+            const availCash = wallet.available_cash || 0;
+            const price = currentQuote.last_price || currentQuote.price || 1.0;
+            const allocatedCash = availCash * (pct / 100.0);
+            
+            let calculatedQty = Math.floor(allocatedCash / price);
+            if (calculatedQty < 1 && allocatedCash > 0) calculatedQty = 1;
+            if (calculatedQty < 1) calculatedQty = 1;
+
+            document.getElementById('orderQtyInput').value = calculatedQty;
+            updateOrderPreview();
+        }
+
+        function tradeForecastSignal() {
+            const bullWidth = parseFloat(document.getElementById('meterBullish').style.width) || 50;
+            if (bullWidth >= 50) {
+                setOrderAction('BUY');
+            } else {
+                setOrderAction('SELL');
+            }
+            switchMainTab('paper');
+            const ticket = document.getElementById('paperTicketCard');
+            if (ticket) {
+                ticket.scrollIntoView({ behavior: 'smooth' });
+                const qtyInput = document.getElementById('orderQtyInput');
+                if (qtyInput) qtyInput.focus();
+            }
+        }
+
+        async function quickClosePosition(sym, qty) {
+            await selectSymbol(sym);
+            setOrderAction('SELL');
+            document.getElementById('orderQtyInput').value = qty;
+            updateOrderPreview();
+            switchMainTab('paper');
+            const ticket = document.getElementById('paperTicketCard');
+            if (ticket) ticket.scrollIntoView({ behavior: 'smooth' });
+        }
 
         // =====================================================================
         // PORTFOLIO AND VIRTUAL WALLETS
@@ -1447,6 +1730,7 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             try {
                 const res = await fetch('/api/portfolio/summary');
                 const data = await res.json();
+                latestPortfolioData = data;
                 renderPortfolioSummary(data);
             } catch (err) {
                 console.error('Failed to fetch portfolio summary:', err);
@@ -1516,14 +1800,16 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             body.innerHTML = all.map(p => {
                 const pnl = p.unrealized_pnl || 0.0;
                 const pnlColor = pnl >= 0 ? '#10B981' : '#EF4444';
+                const curPrice = p.current_price || p.average_entry_price || 0.0;
                 return `
                     <tr>
                         <td><strong>${escapeHtml(p.symbol)}</strong></td>
                         <td>${p.quantity}</td>
                         <td>${p.currSign}${p.average_entry_price.toFixed(2)}</td>
+                        <td>${p.currSign}${curPrice.toFixed(2)}</td>
                         <td style="color: ${pnlColor}; font-weight: 700;">${p.currSign}${pnl.toFixed(2)}</td>
                         <td>
-                            <button class="preset-btn" onclick="quickSell('${escapeHtml(p.symbol)}', ${p.quantity})" style="padding: 2px 8px; font-size: 0.72rem; color: #DC2626;">Sell</button>
+                            <button class="preset-btn" onclick="quickClosePosition('${escapeHtml(p.symbol)}', ${p.quantity})" style="padding: 3px 8px; font-size: 0.72rem; color: #DC2626; font-weight: 700;">Close</button>
                         </td>
                     </tr>
                 `;
@@ -1616,28 +1902,68 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
             await fetchCandles(activeSymbol, tf);
         }
 
-        async function fetchQuote(sym) {
+        async function fetchQuote(sym, forceRefresh = false) {
             try {
-                const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(sym)}`);
+                const refreshParam = forceRefresh ? '&refresh=1' : '';
+                const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(sym)}${refreshParam}`);
                 const quote = await res.json();
                 if (quote.symbol) {
                     currentQuote = quote;
                     document.getElementById('quoteSymbol').innerText = quote.symbol;
                     const price = quote.last_price || quote.price || 0.0;
-                    document.getElementById('quotePrice').innerText = `${quote.currency_symbol || '$'}${price.toFixed(2)}`;
+                    const sign = quote.currency_symbol || '$';
+                    document.getElementById('quotePrice').innerText = `${sign}${price.toFixed(2)}`;
                     
                     const chg = quote.change || 0.0;
                     const chgPct = quote.change_pct || 0.0;
                     const chgEl = document.getElementById('quoteChange');
-                    chgEl.style.color = chg >= 0 ? '#10B981' : '#EF4444';
-                    chgEl.innerText = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
+                    if (chgEl) {
+                        chgEl.style.color = chg >= 0 ? '#10B981' : '#EF4444';
+                        chgEl.innerText = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%)`;
+                    }
 
-                    document.getElementById('quoteDelayBadge').innerText = quote.data_delay || 'Delayed (15m)';
-                    document.getElementById('quoteCurrencyBadge').innerText = quote.currency || 'USD';
-                    document.getElementById('ticketCurrencyPill').innerText = quote.currency || 'USD';
+                    const bid = quote.bid || (price * 0.9995);
+                    const ask = quote.ask || (price * 1.0005);
+                    const bidAskStr = `Bid: ${sign}${bid.toFixed(2)} / Ask: ${sign}${ask.toFixed(2)}`;
 
-                    // Update limit input default
-                    document.getElementById('orderLimitPriceInput').value = price.toFixed(2);
+                    const delayBadge = document.getElementById('quoteDelayBadge');
+                    if (delayBadge) {
+                        if (quote.data_delay && quote.data_delay.includes('Live')) {
+                            delayBadge.className = 'clay-badge badge-success';
+                            delayBadge.innerHTML = '<span class="pulse-dot"></span> Live / Streaming';
+                        } else {
+                            delayBadge.className = 'clay-badge badge-warning';
+                            delayBadge.innerText = quote.data_delay || 'Delayed (15m)';
+                        }
+                    }
+
+                    const curBadge = document.getElementById('quoteCurrencyBadge');
+                    if (curBadge) curBadge.innerText = quote.currency || 'USD';
+
+                    const bidAskBadge = document.getElementById('quoteBidAskBadge');
+                    if (bidAskBadge) bidAskBadge.innerText = bidAskStr;
+
+                    const timeBadge = document.getElementById('quoteTimeBadge');
+                    if (timeBadge) timeBadge.innerText = new Date().toLocaleTimeString();
+
+                    const ticketSym = document.getElementById('ticketSymbolDisplay');
+                    if (ticketSym) ticketSym.innerText = quote.symbol;
+
+                    const ticketPrice = document.getElementById('ticketPriceDisplay');
+                    if (ticketPrice) ticketPrice.innerText = `${sign}${price.toFixed(2)}`;
+
+                    const ticketBidAsk = document.getElementById('ticketBidAskDisplay');
+                    if (ticketBidAsk) ticketBidAsk.innerText = bidAskStr;
+
+                    const ticketCur = document.getElementById('ticketCurrencyPill');
+                    if (ticketCur) ticketCur.innerText = quote.currency || 'USD';
+
+                    // Update limit input default if empty
+                    const limitInput = document.getElementById('orderLimitPriceInput');
+                    if (limitInput && (!limitInput.value || parseFloat(limitInput.value) <= 0)) {
+                        limitInput.value = price.toFixed(2);
+                    }
+                    updateOrderPreview();
                 }
             } catch (err) {
                 console.error('Failed to fetch quote:', err);
@@ -2330,7 +2656,8 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: message,
-                        history: aiHistory.slice(-8)
+                        history: aiHistory.slice(-8),
+                        fast_mode: true
                     })
                 });
                 const data = await res.json();
@@ -2347,8 +2674,12 @@ Type any PowerShell or 'trade9' command below to execute directly in your worksp
                         ).join(' ') + '</div>';
                 }
 
+                const latencyBadge = data.latency_ms 
+                    ? `<span class="clay-badge badge-primary" style="margin-left: 8px; font-size: 0.72rem; padding: 2px 8px;">⚡ ${data.latency_ms}ms</span>` 
+                    : '';
+
                 botDiv.innerHTML = `
-                    <div class="ai-msg-header">🤖 TRADY AI &bull; <span class="ai-time">${nowTime}</span></div>
+                    <div class="ai-msg-header">🤖 TRADY AI &bull; <span class="ai-time">${nowTime}</span> ${latencyBadge}</div>
                     ${toolPillsHtml}
                     <div class="ai-msg-body">${renderMarkdown(data.content || '')}</div>
                 `;
